@@ -29,7 +29,8 @@ final class AppModel {
     ) {
         self.requestLog = requestLog
         self.session = session ?? SessionStore(
-            secrets: KeychainStore(),
+            // Shared with the widgets; a session saved before Step 10 moves over on first read.
+            secrets: FallbackSecretStore(primary: SharedContainer.keychain, legacy: KeychainStore()),
             transport: LoggingTransport(URLSessionTransport(), log: requestLog)
         )
         self.snapshots = snapshots
@@ -51,6 +52,8 @@ final class AppModel {
     func signOut() {
         session.signOut()
         requestLog.clear()
+        SharedContainer.clear()
+        Task { await ShiftLiveActivity.sync(.signedOut) }
         teams = nil
         team = nil
         me = nil
@@ -73,6 +76,7 @@ final class AppModel {
 
     func select(_ team: Team) {
         self.team = team
+        SharedContainer.teamId = team.id
         if let userId = session.session?.userId {
             defaults.set(team.id, forKey: Self.teamKey(userId))
         }
@@ -102,6 +106,8 @@ final class AppModel {
         guard let list = teams?.value, let userId = session.session?.userId else { return }
         let savedId = team?.id ?? defaults.string(forKey: Self.teamKey(userId))
         team = TeamChoice.restore(from: list, savedId: savedId)
+        SharedContainer.teamId = team?.id
+        SharedContainer.teamNames = Dictionary(list.map { ($0.id, $0.name) }, uniquingKeysWith: { a, _ in a })
     }
 
     private static func teamKey(_ userId: String) -> String { "team.\(userId)" }

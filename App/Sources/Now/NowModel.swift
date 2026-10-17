@@ -78,6 +78,17 @@ final class NowModel {
 
     var entries: [DayEntry] { data.value?.entries ?? [] }
 
+    /// The state the widgets, controls and Live Activity show. Stable while
+    /// nothing changes, so it can be compared to decide when to republish.
+    var snapshot: ShiftSnapshot? {
+        guard let value = data.value else { return nil }
+        let today = workDay.startOfDay(.now)
+        let names = SharedContainer.teamNames
+        return ShiftSnapshot.make(active: value.active, running: value.running, entries: value.entries,
+                                  todayShifts: value.week.filter { $0.startTime >= today },
+                                  teamName: { names[$0] }, now: .now)
+    }
+
     /// The running timer's work item.
     var runningEntry: DayEntry? {
         guard let running = data.value?.running else { return nil }

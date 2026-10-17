@@ -29,7 +29,7 @@ In `Config/Local.xcconfig` set:
 
 | Setting | What to put |
 |---|---|
-| `DEVELOPMENT_TEAM` | Your team ID (Xcode › Settings › Accounts). |
+| `DEVELOPMENT_TEAM` | Your team ID (Xcode › Settings › Accounts). Needed even for the Simulator: the widgets share the session through a keychain group named after it. |
 | `HN_DEFAULT_SERVER_URL` | Your Mac's Wi‑Fi address and the backend port. Get the address with `ipconfig getifaddr en0`. Keep the `http:/$()/` spelling, because `//` starts a comment in xcconfig files. |
 | `HN_BUNDLE_ID` *(optional)* | Your own reverse-DNS id, if your team can't register `com.sarkarshubhdeep.huddlenative`. |
 

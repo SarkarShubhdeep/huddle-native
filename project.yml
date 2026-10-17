@@ -33,6 +33,7 @@ targets:
     sources:
       - App/Sources
       - App/Resources
+      - Shared
     dependencies:
       - package: HuddleKit
       - target: HuddleWidgets
@@ -41,6 +42,9 @@ targets:
       properties:
         com.apple.security.application-groups:
           - $(APP_GROUP_ID)
+        # The session lives here so the widgets and controls can act as you.
+        keychain-access-groups:
+          - $(AppIdentifierPrefix)$(HN_BUNDLE_ID).shared
     info:
       path: App/Info.plist
       properties:
@@ -62,6 +66,7 @@ targets:
         HNDevServerURL: $(HN_DEV_SERVER_URL)
         HNProdServerURL: $(HN_PROD_SERVER_URL)
         HNAppGroupID: $(APP_GROUP_ID)
+        HNKeychainGroup: $(AppIdentifierPrefix)$(HN_BUNDLE_ID).shared
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: $(HN_BUNDLE_ID)
@@ -76,6 +81,7 @@ targets:
     platform: iOS
     sources:
       - Widgets/Sources
+      - Shared
     dependencies:
       - package: HuddleKit
       - sdk: WidgetKit.framework
@@ -85,6 +91,8 @@ targets:
       properties:
         com.apple.security.application-groups:
           - $(APP_GROUP_ID)
+        keychain-access-groups:
+          - $(AppIdentifierPrefix)$(HN_BUNDLE_ID).shared
     info:
       path: Widgets/Info.plist
       properties:
@@ -92,6 +100,7 @@ targets:
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         HNAppGroupID: $(APP_GROUP_ID)
+        HNKeychainGroup: $(AppIdentifierPrefix)$(HN_BUNDLE_ID).shared
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     settings:

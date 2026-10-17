@@ -34,6 +34,16 @@ struct MainShell: View {
                 }
                 .environment(now)
                 .environment(inbox)
+                // Keep the widgets, controls and Live Activity in step with the app.
+                .onChange(of: now.snapshot, initial: true) { _, snapshot in
+                    guard let snapshot else { return }
+                    SharedContainer.publish(snapshot)
+                    Task { await ShiftLiveActivity.sync(snapshot) }
+                }
+                // A Siri, widget or Control Center action changed the shift.
+                .onReceive(NotificationCenter.default.publisher(for: .shiftChangedOutsideApp)) { _ in
+                    Task { await now.data.refetch() }
+                }
                 .sensoryFeedback(.success, trigger: now.completed)
                 .sensoryFeedback(.error, trigger: now.actionError) { _, new in new != nil }
             } else {

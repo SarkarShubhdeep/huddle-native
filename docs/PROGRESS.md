@@ -200,10 +200,22 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
   - Diagnostics listed each of those calls.
 
 ### Step 10: System integration
-- [ ] App Intents: Start day, Take break, End day, Start ticket timer.
-- [ ] Control Center controls and interactive widgets.
-- [ ] Live Activity and Dynamic Island.
-- [ ] Lock Screen and Home Screen widgets.
+- [x] App Intents: Start day, Take break, End day, Start ticket timer.
+  - Also Back to work and Pause ticket timer, with Siri phrases (`HuddleShortcuts`). Start ticket timer offers your open tickets on the current team.
+  - They're `LiveActivityIntent`s, so they run in the app's process, which is the only place that can update the Live Activity.
+  - `ShiftActions` (HuddleKit, tested) does the work through the existing REST methods. A team that needs a plan or wrap-up gets "open Huddle to…" instead of a failure.
+- [~] Control Center controls and interactive widgets.
+  - A Shift toggle (on = on the clock) and a Break button, plus the widget's action button (Start day / Break / Back).
+  - The widget's buttons were checked against the backend; the Control Center controls build but aren't tested in the Simulator yet.
+- [x] Live Activity and Dynamic Island.
+  - Starts while you're on the clock and ends when you clock out.
+  - Shows the shift time (amber on a break), the ticket and its time, and Break / Back to work / Pause ticket. It ticks on the device, with no pushes.
+  - Checked: Break and Back to work from the expanded island changed the server and the activity.
+- [x] Lock Screen and Home Screen widgets: Today in small, medium, rectangular, circular and inline. Checked the medium on the Home Screen: live data, a ticking time, and its Break/Back button.
+- How it's shared:
+  - The session moved into a shared keychain group (`keychain-access-groups`: `<team>.<bundle id>.shared`). `FallbackSecretStore` moves an older session over without signing anyone out.
+  - The selected team and the latest `ShiftSnapshot` (HuddleKit, tested) live in the App Group.
+  - The app republishes the snapshot whenever the shift changes, and refetches when an intent changed it from outside.
 - [ ] **You:** clock in from Control Center and watch the Live Activity tick.
 
 ### Step 11: Hardening
