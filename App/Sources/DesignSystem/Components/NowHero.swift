@@ -21,6 +21,10 @@ struct NowHero: View {
     var primaryAction: () -> Void = {}
     /// Shown under the primary action while working.
     var onEndDay: (() -> Void)?
+    /// Shown under the primary action once the day is done.
+    var onStartAgain: (() -> Void)?
+    /// The primary action is running: show a spinner and ignore taps.
+    var isBusy = false
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
@@ -46,12 +50,27 @@ struct NowHero: View {
             }
             factsView
             VStack(spacing: 0) {
-                Button(primaryTitle, action: primaryAction)
-                    .buttonStyle(HNButtonStyle(role: primaryIsAccent ? .primary : .secondary, size: .large))
+                Button(action: primaryAction) {
+                    if isBusy {
+                        ProgressView().tint(primaryIsAccent ? Palette.onLime : Palette.textPrimary)
+                    } else {
+                        Text(primaryTitle)
+                    }
+                }
+                .buttonStyle(HNButtonStyle(role: primaryIsAccent ? .primary : .secondary, size: .large))
+                .disabled(isBusy)
+                .accessibilityLabel(primaryTitle)
                 if let onEndDay, phase == .working {
                     Button("End day", action: onEndDay)
                         .buttonStyle(.destructive)
                         .padding(.top, Spacing.xs)
+                        .disabled(isBusy)
+                }
+                if let onStartAgain, phase == .ended {
+                    Button("Start another shift", action: onStartAgain)
+                        .buttonStyle(.quiet)
+                        .padding(.top, Spacing.xs)
+                        .disabled(isBusy)
                 }
             }
         }

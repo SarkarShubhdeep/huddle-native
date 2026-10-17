@@ -2,21 +2,57 @@ import HuddleKit
 import SwiftUI
 
 /// Signed in: the five tabs in the dock, each with the team switcher and your
-/// avatar in its navigation bar.
+/// avatar in its navigation bar. Owns the shift model, so the timer strip
+/// ticks on every tab.
 struct MainShell: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.scenePhase) private var scenePhase
     @State private var tab: AppTab = .now
+    @State private var now: NowModel?
 
     var body: some View {
-        AppDock(selection: $tab, strip: nil) { tab in
-            NavigationStack {
-                TabRoot(tab: tab)
-                    .navigationTitle(tab.title)
-                    .toolbar {
-                        ToolbarItem(placement: .topBarLeading) { TeamSwitcher() }
-                        ToolbarItem(placement: .topBarTrailing) { AccountMenu() }
+        Group {
+            if let now {
+                AppDock(selection: $tab, liveStrip: { now.strip(at: $0) }, onStripAction: { stripAction(now) }) { tab in
+                    NavigationStack {
+                        TabRoot(tab: tab, onShowTimesheet: { self.tab = .time })
+                            .navigationTitle(tab.title)
+                            .toolbar {
+                                ToolbarItem(placement: .topBarLeading) { TeamSwitcher() }
+                                ToolbarItem(placement: .topBarTrailing) { AccountMenu() }
+                            }
                     }
+                }
+                .environment(now)
+                .sensoryFeedback(.success, trigger: now.completed)
+                .sensoryFeedback(.error, trigger: now.actionError) { _, new in new != nil }
+            } else {
+                ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity).background(Palette.canvas)
             }
+        }
+        .task {
+            if now == nil { now = model.makeNowModel() }
+            await now?.data.load()
+        }
+        // Live data without a socket: refresh every 30 s while the app is in front.
+        .task(id: scenePhase) {
+            guard scenePhase == .active, let now else { return }
+            await now.refresh()
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(30))
+                guard !Task.isCancelled else { return }
+                await now.refresh()
+            }
+        }
+    }
+
+    /// The strip's one button: pause the ticket, end the break, or go pick a ticket.
+    private func stripAction(_ now: NowModel) {
+        switch now.strip(at: .now) {
+        case .timing: Task { await now.pauseTimer() }
+        case .onBreak: Task { await now.resume() }
+        case .onShift: tab = .tickets
+        case nil: break
         }
     }
 }
@@ -24,9 +60,18 @@ struct MainShell: View {
 /// Each tab's screen. Until its step lands, a placeholder that says which.
 private struct TabRoot: View {
     let tab: AppTab
+    var onShowTimesheet: () -> Void = {}
     @Environment(AppModel.self) private var model
 
     var body: some View {
+        if tab == .now, model.team != nil {
+            NowScreen(onShowTimesheet: onShowTimesheet)
+        } else {
+            placeholderView
+        }
+    }
+
+    private var placeholderView: some View {
         Group {
             if let teams = model.teams, teams.value == nil, let error = teams.error {
                 StatusView.unreachable(

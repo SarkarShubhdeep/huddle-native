@@ -51,6 +51,9 @@ enum TimerStripState: Equatable, Sendable {
 struct AppDock<Content: View>: View {
     @Binding var selection: AppTab
     var strip: TimerStripState?
+    /// A ticking strip: called once a second with the current time. Takes
+    /// precedence over `strip`, and only the dock redraws each second.
+    var liveStrip: ((Date) -> TimerStripState?)?
     var inboxBadge = 0
     var onStripAction: () -> Void = {}
     @ViewBuilder var content: (AppTab) -> Content
@@ -74,7 +77,15 @@ struct AppDock<Content: View>: View {
         }
         .tint(Palette.limeText)
         .overlay(alignment: .bottom) {
-            Dock(selection: $selection, strip: strip, inboxBadge: inboxBadge, onStripAction: onStripAction)
+            Group {
+                if let liveStrip {
+                    TimelineView(.periodic(from: .now, by: 1)) { context in
+                        Dock(selection: $selection, strip: liveStrip(context.date), inboxBadge: inboxBadge, onStripAction: onStripAction)
+                    }
+                } else {
+                    Dock(selection: $selection, strip: strip, inboxBadge: inboxBadge, onStripAction: onStripAction)
+                }
+            }
                 .padding(.horizontal, Spacing.m)
                 .padding(.bottom, Self.bottomGap)
                 .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height in
@@ -288,7 +299,7 @@ struct TimerStrip: View {
         case let .timing(_, title, _): title
         case .onShift: "No ticket timer running"
         case let .onBreak(_, title?, _): "Ticket paused · \(title)"
-        case .onBreak: "No ticket timer"
+        case .onBreak: "No ticket was running"
         }
     }
 
@@ -297,7 +308,7 @@ struct TimerStrip: View {
         case let .timing(_, _, seconds): ShiftClockFormat.clock(seconds)
         case .onShift: "Pick a ticket"
         case let .onBreak(_, _, seconds?): ShiftClockFormat.clock(seconds)
-        case .onBreak: "Paused"
+        case .onBreak: "Shift paused"
         }
     }
 

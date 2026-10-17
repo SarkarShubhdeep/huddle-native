@@ -92,6 +92,21 @@ struct ServiceTests {
         #expect(body(stub)["ticketId"] as? String == "k1")
     }
 
+    @Test("A wrap-up without a plan is created linked to the shift and stamped")
+    func createWrapUp() async throws {
+        let stub = StubTransport([.json(200, #"{"result":{"id":"p2"}}"#)])
+        _ = try await HuddleService(api(stub)).create(.init(teamId: "t1", content: .init(text: "**Wrap-up:** Done"), postDate: "2026-10-17", clockEventId: "c1", wrapUp: true))
+        #expect(body(stub)["clockEventId"] as? String == "c1")
+        #expect(body(stub)["wrapUp"] as? Bool == true)
+    }
+
+    @Test("A plain post doesn't send wrapUp at all")
+    func plainPostOmitsWrapUp() async throws {
+        let stub = StubTransport([.json(200, #"{"result":{"id":"p3"}}"#)])
+        _ = try await HuddleService(api(stub)).create(.init(teamId: "t1", content: .init(text: "Hi")))
+        #expect(body(stub)["wrapUp"] == nil)
+    }
+
     @Test("Deleting no notifications makes no call")
     func deleteNone() async throws {
         let stub = StubTransport([])

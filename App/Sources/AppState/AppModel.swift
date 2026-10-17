@@ -47,6 +47,12 @@ final class AppModel {
         me = nil
     }
 
+    /// The shift model for the signed-in user, or nil when signed out.
+    func makeNowModel() -> NowModel? {
+        guard let current = session.session, let api = session.makeClient() else { return nil }
+        return NowModel(api: api, userId: current.userId, snapshots: snapshots)
+    }
+
     var lastEmail: String { defaults.string(forKey: "signIn.lastEmail") ?? "" }
 
     // MARK: Teams

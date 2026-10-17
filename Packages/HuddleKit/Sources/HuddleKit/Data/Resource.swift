@@ -24,6 +24,11 @@ public final class Resource<Value: Codable & Sendable> {
     @ObservationIgnored private let store: (any SnapshotStore)?
     @ObservationIgnored private let cacheKey: String?
     @ObservationIgnored private var inFlight: Task<Void, Never>?
+    /// A fetch waiting for the one in flight to end (see `refetch`).
+    @ObservationIgnored private var queued: Task<Void, Never>?
+    /// Each fetch's number; results from fetches below `acceptFrom` are stale.
+    @ObservationIgnored private var generation = 0
+    @ObservationIgnored private var acceptFrom = 0
 
     public init(
         cacheKey: String? = nil,
@@ -50,6 +55,29 @@ public final class Resource<Value: Codable & Sendable> {
         await Self.wait(for: task, atMost: maxWait)
     }
 
+    /// Fetches after a write. A fetch already in flight started before the
+    /// write and may bring back the old state, so its result is dropped and a
+    /// new fetch starts as soon as it ends. Refetches made meanwhile share
+    /// that new fetch. Returns when it lands or after `maxWait`.
+    public func refetch(maxWait: Duration = .seconds(6)) async {
+        guard let running = inFlight else {
+            await Self.wait(for: start(), atMost: maxWait)
+            return
+        }
+        acceptFrom = generation + 1
+        let task = queued ?? {
+            let next = Task { [weak self] in
+                await running.value
+                guard let self else { return }
+                self.queued = nil
+                await self.start().value
+            }
+            queued = next
+            return next
+        }()
+        await Self.wait(for: task, atMost: maxWait)
+    }
+
     /// Sets the value locally — an optimistic update after an action, before the
     /// confirming refetch.
     public func set(_ newValue: Value) {
@@ -65,6 +93,8 @@ public final class Resource<Value: Codable & Sendable> {
 
     private func start() -> Task<Void, Never> {
         let fetch = self.fetch
+        generation += 1
+        let number = generation
         let task = Task { [weak self] in
             self?.isLoading = true
             let result: Result<Value, any Error>
@@ -73,13 +103,19 @@ public final class Resource<Value: Codable & Sendable> {
             } catch {
                 result = .failure(error)
             }
-            self?.finish(result)
+            self?.finish(result, number: number)
         }
         inFlight = task
         return task
     }
 
-    private func finish(_ result: Result<Value, any Error>) {
+    private func finish(_ result: Result<Value, any Error>, number: Int) {
+        defer {
+            isLoading = false
+            inFlight = nil
+        }
+        // Started before a write: what it fetched may already be out of date.
+        guard number >= acceptFrom else { return }
         switch result {
         case let .success(fresh):
             value = fresh
@@ -89,8 +125,6 @@ public final class Resource<Value: Codable & Sendable> {
         case let .failure(failure):
             error = APIError.from(failure)
         }
-        isLoading = false
-        inFlight = nil
     }
 
     private func save(_ value: Value) {

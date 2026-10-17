@@ -172,4 +172,43 @@ struct ResourceTests {
         #expect(loaded.value == ["x", "y"])
         #expect(abs(loaded.savedAt.timeIntervalSinceNow) < 5)
     }
+
+    @Test("A refetch after a write ignores the fetch already in flight and gets fresh data")
+    func refetchAfterWrite() async {
+        let fetch = ControlledFetch(gated: true, results: [.success(["before write"]), .success(["after write"])])
+        let resource = Resource<[String]> { try await fetch() }
+
+        // A poll is in flight, started before the write.
+        let poll = Task { await resource.refresh() }
+        await eventually { fetch.calls == 1 }
+
+        // The write lands; its result is shown at once, then refetched.
+        resource.set(["optimistic"])
+        let refetch = Task { await resource.refetch() }
+        fetch.release()
+        await poll.value
+        await refetch.value
+        await eventually { fetch.calls == 2 && resource.value == ["after write"] }
+
+        #expect(fetch.calls == 2)
+        #expect(resource.value == ["after write"])
+    }
+
+    @Test("Concurrent refetches share the one fetch queued behind the poll")
+    func concurrentRefetchesShare() async {
+        let fetch = ControlledFetch(gated: true, results: [.success(["poll"]), .success(["fresh"])])
+        let resource = Resource<[String]> { try await fetch() }
+        let poll = Task { await resource.refresh() }
+        await eventually { fetch.calls == 1 }
+
+        let a = Task { await resource.refetch() }
+        let b = Task { await resource.refetch() }
+        await eventually { true }
+        fetch.release()
+        await poll.value; await a.value; await b.value
+        await eventually { resource.value == ["fresh"] }
+
+        #expect(fetch.calls == 2)
+        #expect(resource.value == ["fresh"])
+    }
 }

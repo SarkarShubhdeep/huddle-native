@@ -171,13 +171,17 @@ public struct HuddleService: Sendable {
         public let ticketId: String?
         public let postDate: String?
         public let clockEventId: String?
+        /// Stamps the post as a wrap-up when it's created: the fallback when a
+        /// shift has no plan post to add the wrap-up to.
+        public let wrapUp: Bool?
 
-        public init(teamId: String, content: HuddlePost.Content, ticketId: String? = nil, postDate: String? = nil, clockEventId: String? = nil) {
+        public init(teamId: String, content: HuddlePost.Content, ticketId: String? = nil, postDate: String? = nil, clockEventId: String? = nil, wrapUp: Bool? = nil) {
             self.teamId = teamId
             self.content = content
             self.ticketId = ticketId
             self.postDate = postDate
             self.clockEventId = clockEventId
+            self.wrapUp = wrapUp
         }
     }
 
