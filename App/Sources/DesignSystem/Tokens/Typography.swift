@@ -35,5 +35,6 @@ struct HeroTimeText: View {
             .lineLimit(1)
             .minimumScaleFactor(0.4)
             .contentTransition(.numericText())
+            .springAnimation(value: text)
     }
 }

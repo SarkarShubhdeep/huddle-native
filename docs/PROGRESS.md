@@ -67,9 +67,13 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
   - Edge-to-edge rows: `Hairline`, `EdgeToEdgeList`, `TicketRow` (status dot, wrapping facts line via `FlowLayout`, lime tint while timing), `WorkRow`, `TimeRow`, `Avatar`.
   - `RefreshBanner` and `StatusView` (empty, unreachable, offline).
 - [ ] Signature components:
-  - [ ] the glass dock with the timer strip
-  - [ ] the Now hero
-  - [ ] the ticket row
+  - [x] the glass dock with the timer strip
+    - `AppDock` is the native iOS 26 `TabView` (Liquid Glass tab bar, minimizes on scroll) with `TimerStrip` as its `tabViewBottomAccessory`. The strip has three states (timing, on shift, on break), is hidden off the clock, and shows just the times when the bar is minimized.
+    - The system draws the strip and the tab bar as two stacked glass capsules rather than one merged shape.
+    - Hiding the strip uses `tabViewBottomAccessory(isEnabled:)` on iOS 26.1+; on 26.0 the accessory is added or removed instead.
+  - [x] filter and sort pills: `FilterPill` (native glass menu), `MultiSelectPill` (stays open while you tick), `SortPill` (field, then direction), `FilterCountPill`, `PillBar`
+  - [x] the Now hero: `NowHero` in all four states (tiles fall back to a list at large text sizes) and `TicketTimerCard`
+  - [x] the ticket row
   - [ ] the post row
   - [ ] the week bars
   - [ ] the rich composer toolbar
