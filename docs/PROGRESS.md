@@ -61,7 +61,11 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
   - 17 color sets under `Assets.xcassets/Palette`, reached through `Palette`. The canvas's soft tints (lime, done), raised surface, fill and bar colors are included.
   - `Typography` (system text styles, SF Rounded tabular times, `HeroTimeText`), `Spacing`, `Radius`, `Motion` (the spring, off under Reduce Motion), and `controlGlass` (solid under Reduce Transparency).
   - A debug-only `ComponentGallery` is the app's root for now, so every component can be screenshotted in the Simulator.
-- [ ] Button styles, the status chip, the empty, error and offline states, and the refresh banner.
+- [x] Button styles, the status chip, the empty, error and offline states, and the refresh banner.
+  - `HNButtonStyle` (primary lime capsule, secondary, destructive text, quiet lime text; large, regular and small) and `HNIconButtonStyle` (play/pause, new), all with 44 pt touch targets.
+  - `StatusChip` with a `Tone` (neutral, working, on break, done), also used for the Plan and Wrap-up badges.
+  - Edge-to-edge rows: `Hairline`, `EdgeToEdgeList`, `TicketRow` (status dot, wrapping facts line via `FlowLayout`, lime tint while timing), `WorkRow`, `TimeRow`, `Avatar`.
+  - `RefreshBanner` and `StatusView` (empty, unreachable, offline).
 - [ ] Signature components:
   - [ ] the glass dock with the timer strip
   - [ ] the Now hero
