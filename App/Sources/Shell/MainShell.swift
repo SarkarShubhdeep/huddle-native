@@ -18,7 +18,10 @@ struct MainShell: View {
                         TabRoot(tab: tab, onShowTimesheet: { self.tab = .time })
                             .navigationTitle(tab.title)
                             .toolbar {
-                                ToolbarItem(placement: .topBarLeading) { TeamSwitcher() }
+                                // The timesheet spans all teams; its bar holds the week instead.
+                                if tab != .time {
+                                    ToolbarItem(placement: .topBarLeading) { TeamSwitcher() }
+                                }
                                 // Profile and settings live behind the avatar on Now; the
                                 // other tabs use the space for their own actions (canvas).
                                 if tab == .now {
@@ -72,6 +75,8 @@ private struct TabRoot: View {
             NowScreen(onShowTimesheet: onShowTimesheet)
         } else if tab == .tickets, model.team != nil {
             TicketsScreen()
+        } else if tab == .time, model.team != nil {
+            TimesheetScreen()
         } else {
             placeholderView
         }

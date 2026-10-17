@@ -15,6 +15,8 @@ struct WeekBars: View {
     @Binding var selectedIndex: Int
     /// "4 days · avg 6h 46m"
     var caption: String?
+    /// "This week", or the dates of a past week.
+    var title = "This week"
 
     /// Bars scale to the longest day, but never less than a 9-hour day, so a
     /// short week doesn't look full.
@@ -30,14 +32,14 @@ struct WeekBars: View {
                 : AnyLayout(HStackLayout(alignment: .bottom))
             header {
                 VStack(alignment: .leading, spacing: Spacing.xxs) {
-                    Text("This week").font(.footnote).foregroundStyle(Palette.textSecondary)
+                    Text(title).font(.footnote).foregroundStyle(Palette.textSecondary)
                     Text(ShiftClockFormat.duration(days.map(\.seconds).reduce(0, +)))
                         .font(Typography.time(.largeTitle))
                         .foregroundStyle(Palette.textPrimary)
                         .contentTransition(.numericText())
                 }
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel("This week")
+                .accessibilityLabel(title)
                 .accessibilityValue(ShiftClockFormat.spoken(days.map(\.seconds).reduce(0, +)))
                 Spacer(minLength: 0)
                 if let caption {

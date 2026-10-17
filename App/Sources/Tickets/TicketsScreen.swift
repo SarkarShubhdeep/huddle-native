@@ -247,7 +247,12 @@ private struct TicketPills: View {
 
             FilterPill(title: statusTitle, isActive: model.query.status != .all) {
                 Picker("Status", selection: $model.query.status) {
-                    Text("Not done").tag(TicketQuery.StatusFilter.open)
+                    // "Open" as on the canvas: everything that isn't done.
+                    VStack {
+                        Text("Open")
+                        Text("Everything not done")
+                    }
+                    .tag(TicketQuery.StatusFilter.open)
                     Text("All statuses").tag(TicketQuery.StatusFilter.all)
                 }
                 .pickerStyle(.inline)
@@ -292,7 +297,7 @@ private struct TicketPills: View {
 
     private var statusTitle: String {
         switch model.query.status {
-        case .open: "Not done"
+        case .open: "Open"
         case .all: "Status"
         case let .only(raw): TicketStatus(raw: raw).label
         }

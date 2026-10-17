@@ -120,7 +120,7 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
 
 ### Step 6: Tickets and timers
 - [x] Edge-to-edge list, filter and sort pills, the search screen, swipe actions.
-  - Pills: a filter count (with "Clear filters"), Status ("Not done" by default), Assignee (me, anyone, or a teammate), Priority (multi-select), and Sort (field and direction).
+  - Pills: a filter count (with "Clear filters"), Status ("Open" by default, meaning anything not done), Assignee (me, anyone, or a teammate), Priority (multi-select), and Sort (field and direction).
   - Filtering and sorting run on the device through `TicketQuery` (HuddleKit, tested), and the choice is remembered.
   - Rows show status, priority, assignees and today's time; the running row is tinted and ticks.
   - Swipe right to start or pause the timer; swipe left for Done or In progress.
@@ -143,14 +143,21 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
       - A new sort field starts in its natural direction (Title A to Z, the others newest/highest first).
       - The summary keeps "A to Z" capitalized.
       - The menus' dividers render.
-      - The not-done filter is called "Not done", so it doesn't clash with the Open status.
+      - The default "Open" filter has a subtitle ("Everything not done") in its menu, so it's distinct from the Open status below it.
       - In progress swipes gray, Done green.
       - Done tickets get Reopen.
 - [ ] **You:** run a timer, switch tickets, and confirm only one runs at a time.
 
 ### Step 7: Timesheet
-- [ ] Week total and daily bars (`timers.getWeek`).
-- [ ] Day detail (`clock.timesheet`).
+- [x] Week total and daily bars (`timers.getWeek`).
+  - The bars count ticket-timer time per day, like the web app's Work page. Bars scale to at least a 9-hour day, and today is selected.
+  - Week menu (this week, last week, four more), previous/next buttons (not past this week), cached per week, refetched after any clock or timer action.
+  - The Time tab spans all teams, so its bar holds the week instead of the team switcher.
+- [x] Day detail (`clock.timesheet`, one call per week): each shift that started that day, then its ticket timers and breaks, newest first.
+  - Running items count up to now. Breaks read "Rest break · paid" or "Meal break · unpaid" (20-minute rule when the server gives no type), and a shift past midnight names the day it ended.
+  - Built by `DayTimeline` (HuddleKit, 3 tests).
+  - The canvas's "Request a change" link isn't built: timesheet change requests aren't in v1.
+- [x] Checked against the local backend: this week's 2h 05m equals the closed timer seconds in the database plus the running timer; previous-week navigation; dark mode.
 - [ ] **You:** check the totals against the web app.
 
 ### Step 8: Huddle
