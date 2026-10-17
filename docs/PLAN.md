@@ -26,7 +26,8 @@ Huddle Native is an experimental native iOS app in SwiftUI. It talks to the **ex
   - HuddleKit tests: 7 of 7 pass on Swift 6.2 (Linux).
 - **Step 2 (HuddleKit core): done.** APIClient, one-shot login, Keychain session, models, services, the never-hang `Resource<T>` and `ShiftClock`, with 72 tests passing.
   - The cache is JSON snapshots, not SwiftData: it's portable and enough for stale-while-revalidate.
-- **Waiting on you:** run `xcodegen` on your Mac and confirm the app builds and runs on a device. That's the last box of Step 1.
+- **Steps 1–2 confirmed on your Mac:** the app runs in the Simulator, and `swift test` passes in Terminal and in Xcode.
+- **Next:** Step 3 (design system in code), worked on from a Claude Code session running on the Mac, so it can build and use the Simulator.
 
 ## Guidelines (apply to every step)
 
@@ -84,7 +85,7 @@ Huddle Native is an experimental native iOS app in SwiftUI. It talks to the **ex
 (Step-by-step detail and checkboxes live in `docs/PROGRESS.md`.)
 
 0. ✅ **Design review.**
-1. 🟡 **Repo skeleton.** Pushed. Waiting on your first Xcode build.
+1. ✅ **Repo skeleton.** Builds and runs in the iOS 26.5 Simulator.
 2. ✅ **HuddleKit core:**
    - APIClient
    - MeteorLogin

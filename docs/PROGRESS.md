@@ -8,7 +8,7 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
 - [x] Revise from review comments: no progress rings; edge-to-edge lists; a timer strip merged into the dock; search behind an icon; filter and sort pills; a rich composer with @ mentions; Liquid Glass on controls only.
 - [x] Lock the decisions (see [DESIGN.md](DESIGN.md)).
 
-### Step 1: Repo skeleton
+### Step 1: Repo skeleton ✅
 - [x] **You:** create the empty GitHub repo `SarkarShubhdeep/huddle-native`.
 - [x] `project.yml` with three targets: the app, the widget/Live Activity extension, and the local `HuddleKit` package. iOS 26, Swift 6, strict concurrency.
 - [x] Info.plist keys: `NSLocalNetworkUsageDescription`, `NSAllowsLocalNetworking`, Live Activities. Plus the App Group and bundle id.
@@ -18,7 +18,7 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
 - [x] `.gitignore`, `docs/DESIGN.md`, `docs/PLAN.md` (plan and guidelines), this file.
 - [x] HuddleKit's first unit, `ServerEndpoint`, with Swift Testing tests.
 - [x] Push to https://github.com/SarkarShubhdeep/huddle-native.
-- [ ] **You:** run `brew install xcodegen && xcodegen`, open the project in Xcode, and confirm the empty app builds and runs on a device.
+- [x] **You:** run `brew install xcodegen && xcodegen`, open the project in Xcode, and confirm the empty app builds and runs. Confirmed in the iOS 26.5 Simulator (iPhone 17 Pro).
 
 ### Step 2: HuddleKit core ✅
 - [x] `APIClient` (a `Sendable` struct over an injectable `HTTPTransport`):
@@ -54,7 +54,7 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
   - [x] Resource single-flight and the 6 s cap
   - [x] shift-time math, including the 20-minute meal rule
 - [x] `swift test`: 72 tests pass on Swift 6.2 (Linux), with no warnings under strict concurrency.
-- [ ] **You:** run `swift test` in `Packages/HuddleKit` on your Mac (or ⌘U in Xcode).
+- [x] **You:** run `swift test` in `Packages/HuddleKit` on your Mac (or ⌘U in Xcode). Confirmed: passes in Terminal and in Xcode.
 
 ### Step 3: Design system in code
 - [ ] Tokens from DESIGN.md: color sets in light and dark, type, spacing, radius, motion.
