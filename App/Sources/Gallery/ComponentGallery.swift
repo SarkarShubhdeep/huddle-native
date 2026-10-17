@@ -9,7 +9,7 @@ import SwiftUI
 /// Launch arguments (all optional):
 /// - `-tab now|tickets|huddle|time|inbox`
 /// - `-demo off|timing|shift|break|ended` sets the shift state and timer strip
-/// - `-showcase tokens|buttons|chips|rows|states|pills` opens one showcase (Inbox tab)
+/// - `-showcase tokens|buttons|chips|rows|pills|hero|posts|week|composer|states` opens one showcase (Inbox tab)
 struct ComponentGallery: View {
     enum Demo: String, CaseIterable, Identifiable {
         case off, timing, shift, `break`, ended
@@ -59,10 +59,8 @@ struct ComponentGallery: View {
         switch tab {
         case .now: NowGalleryPage(demo: demo, tick: tick, onAction: advanceDemo)
         case .tickets: TicketsGalleryPage()
-        case .huddle: StatusView(systemImage: "bubble.left", title: "Coming next", message: "Post rows and the composer toolbar.")
-            .frame(maxWidth: .infinity, maxHeight: .infinity).background(Palette.canvas)
-        case .time: StatusView(systemImage: "chart.bar", title: "Coming next", message: "Week bars.")
-            .frame(maxWidth: .infinity, maxHeight: .infinity).background(Palette.canvas)
+        case .huddle: PostRowPreview()
+        case .time: WeekBarsPreview()
         case .inbox: ShowcaseList()
         }
     }
@@ -113,13 +111,8 @@ private struct NowGalleryPage: View {
                 } else if demo == .break {
                     TicketTimerCard(title: "Fix login redirect on iPad", time: ShiftClockFormat.clock(2530), isPaused: true)
                 }
-                HStack(alignment: .firstTextBaseline) {
-                    Text("Today").font(Typography.sectionTitle)
-                    Spacer()
-                    Text("3 tickets · 3h 12m").font(.subheadline).foregroundStyle(Palette.textSecondary)
-                }
-                .padding(.horizontal, Spacing.xs)
-                .padding(.top, Spacing.xs)
+                SectionHeader(title: "Today", detail: "3 tickets · 3h 12m")
+                    .padding(.top, Spacing.xs)
                 EdgeToEdgeList {
                     WorkRow(title: "Fix login redirect on iPad", duration: "0:42", isActive: demo == .timing)
                     WorkRow(title: "Review onboarding copy", duration: "1:15")
@@ -185,7 +178,7 @@ private struct TicketsGalleryPage: View {
 
 private struct ShowcaseList: View {
     enum Showcase: String, CaseIterable, Identifiable {
-        case tokens, buttons, chips, rows, pills, hero, states
+        case tokens, buttons, chips, rows, pills, hero, posts, week, composer, states
 
         var id: String { rawValue }
 
@@ -197,11 +190,14 @@ private struct ShowcaseList: View {
             case .rows: "Edge-to-edge rows"
             case .pills: "Filter and sort pills"
             case .hero: "Now hero, all states"
+            case .posts: "Post rows"
+            case .week: "Week bars"
+            case .composer: "Composer toolbar"
             case .states: "Banner and states"
             }
         }
 
-        @ViewBuilder var view: some View {
+        @MainActor @ViewBuilder var view: some View {
             switch self {
             case .tokens: ScrollView { TokenSwatches() }.background(Palette.canvas)
             case .buttons: ButtonsPreview()
@@ -209,6 +205,9 @@ private struct ShowcaseList: View {
             case .rows: RowsPreview()
             case .pills: PillsPreview()
             case .hero: NowHeroPreview()
+            case .posts: PostRowPreview()
+            case .week: WeekBarsPreview()
+            case .composer: ComposerToolbarPreview()
             case .states: StatesPreview()
             }
         }

@@ -36,6 +36,34 @@ struct EdgeToEdgeList<Content: View>: View {
     }
 }
 
+/// A section title with a quiet detail on the right ("Today · 3 tickets · 3h 12m").
+/// At accessibility text sizes the detail moves under the title.
+struct SectionHeader: View {
+    let title: String
+    var detail: String?
+
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: Spacing.xxs))
+            : AnyLayout(HStackLayout(alignment: .firstTextBaseline))
+        layout {
+            Text(title)
+                .font(Typography.sectionTitle)
+                .foregroundStyle(Palette.textPrimary)
+                .accessibilityAddTraits(.isHeader)
+            Spacer(minLength: 0)
+            if let detail {
+                Text(detail)
+                    .font(.subheadline)
+                    .foregroundStyle(Palette.textSecondary)
+            }
+        }
+        .padding(.horizontal, Spacing.xs)
+    }
+}
+
 // MARK: - Ticket status
 
 /// How a ticket's status reads and which color its dot takes.

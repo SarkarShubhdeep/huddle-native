@@ -22,6 +22,8 @@ struct NowHero: View {
     /// Shown under the primary action while working.
     var onEndDay: (() -> Void)?
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             HStack {
@@ -78,11 +80,15 @@ struct NowHero: View {
             }
             VStack(spacing: 0) {
                 ForEach(facts, id: \.self) { fact in
-                    HStack {
+                    let layout = dynamicTypeSize.isAccessibilitySize
+                        ? AnyLayout(VStackLayout(alignment: .leading, spacing: Spacing.xxs))
+                        : AnyLayout(HStackLayout())
+                    layout {
                         Text(fact.label).foregroundStyle(Palette.textSecondary)
-                        Spacer()
+                        Spacer(minLength: 0)
                         Text(fact.value).fontWeight(.semibold).monospacedDigit()
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .font(.subheadline)
                     .padding(.vertical, 7)
                     .accessibilityElement(children: .combine)
