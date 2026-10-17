@@ -53,6 +53,14 @@ struct NowScreen: View {
                 return await now.startDay(teamId: teamId, plan: plan)
             }
         }
+        .onChange(of: now.requestedSheet, initial: true) { _, sheet in
+            guard let sheet else { return }
+            now.requestedSheet = nil
+            switch sheet {
+            case .plan: if now.active == nil { showPlan = true }
+            case .wrapUp: if now.active != nil { showWrapUp = true }
+            }
+        }
         .sheet(isPresented: $showWrapUp) {
             WrapUpSheet(requiresWrapUp: activeTeam?.requiresPlan ?? false)
         }

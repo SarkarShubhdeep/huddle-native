@@ -16,12 +16,14 @@ struct ShiftValueProvider: ControlValueProvider {
 /// Turning the toggle on starts the day; off ends it.
 struct SetShiftIntent: SetValueIntent, LiveActivityIntent {
     static let title: LocalizedStringResource = "Set Shift"
+    /// Runs in the background, but may come forward to write a plan or wrap-up.
+    static let supportedModes: IntentModes = [.background, .foreground(.dynamic)]
     @Parameter(title: "On the clock") var value: Bool
 
     func perform() async throws -> some IntentResult {
         let on = value
-        try await ShiftIntentRunner.run { actions in
-            if on { try await actions.startDay(teamId: SharedContainer.teamId) } else { try await actions.endDay() }
+        try await ShiftIntentRunner.run(self) { actions in
+            if on { try await ShiftIntentRunner.startDay(self, actions) } else { try await actions.endDay() }
         }
         return .result()
     }
@@ -46,7 +48,7 @@ struct BreakIntent: LiveActivityIntent {
 
     func perform() async throws -> some IntentResult {
         let onBreak = SharedContainer.snapshot.phase == .onBreak
-        try await ShiftIntentRunner.run { onBreak ? try await $0.resume() : try await $0.takeBreak() }
+        try await ShiftIntentRunner.run(self) { onBreak ? try await $0.resume() : try await $0.takeBreak() }
         return .result()
     }
 }

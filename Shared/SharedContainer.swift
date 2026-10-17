@@ -49,6 +49,20 @@ enum SharedContainer {
         set { defaults.set(newValue, forKey: Key.teamId) }
     }
 
+    /// Teams that ask for a plan before clocking in.
+    static var planTeams: Set<String> {
+        get { Set(defaults.stringArray(forKey: "shared.planTeams") ?? []) }
+        set { defaults.set(Array(newValue), forKey: "shared.planTeams") }
+    }
+
+    /// A sheet an intent asked the app to show when it comes forward.
+    enum PendingSheet: String { case plan, wrapUp }
+
+    static var pendingSheet: PendingSheet? {
+        get { defaults.string(forKey: "shared.pendingSheet").flatMap(PendingSheet.init(rawValue:)) }
+        set { defaults.set(newValue?.rawValue, forKey: "shared.pendingSheet") }
+    }
+
     static var teamNames: [String: String] {
         get { defaults.dictionary(forKey: Key.teamNames) as? [String: String] ?? [:] }
         set { defaults.set(newValue, forKey: Key.teamNames) }
@@ -80,6 +94,8 @@ enum SharedContainer {
         defaults.removeObject(forKey: Key.snapshot)
         defaults.removeObject(forKey: Key.teamId)
         defaults.removeObject(forKey: Key.teamNames)
+        defaults.removeObject(forKey: "shared.planTeams")
+        defaults.removeObject(forKey: "shared.pendingSheet")
         reloadWidgets()
     }
 

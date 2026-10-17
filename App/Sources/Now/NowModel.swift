@@ -30,6 +30,8 @@ final class NowModel {
     var actionError: String?
     /// Bumped after each successful action, for haptics.
     private(set) var completed = 0
+    /// A sheet to open, asked for by Siri or Control Center (which can't write a plan or wrap-up).
+    var requestedSheet: SharedContainer.PendingSheet?
 
     @ObservationIgnored private let clock: ClockService
     @ObservationIgnored private let timers: TimerService

@@ -108,9 +108,14 @@ struct ShiftActionsTests {
             .json(200, #"{"result":{"id":"c","teamId":"t","startTime":1792252800000,"endTime":null}}"#),
             .json(400, #"{"error":"plan-required","reason":"Add a wrap-up"}"#),
         ])
-        await #expect(throws: ShiftActions.Failure.needsApp("Your team asks for a wrap-up first. Open Huddle to post it.")) {
-            try await actions(stub).endDay()
-        }
+        await #expect(throws: ShiftActions.Failure.needsWrapUp) { try await actions(stub).endDay() }
+    }
+
+    @Test("A team that asks for a plan isn't clocked in from outside the app")
+    func planFirst() async {
+        let stub = StubTransport([.json(200, #"{"result":null}"#)])
+        await #expect(throws: ShiftActions.Failure.needsPlan) { try await actions(stub).startDay(teamId: "t", requiresPlan: true) }
+        #expect(stub.requests.map { $0.url?.path } == ["/api/clock_activeForUser"])
     }
 
     @Test("Start day without a team asks to pick one")

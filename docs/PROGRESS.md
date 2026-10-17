@@ -204,9 +204,11 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
   - Also Back to work and Pause ticket timer, with Siri phrases (`HuddleShortcuts`). Start ticket timer offers your open tickets on the current team.
   - They're `LiveActivityIntent`s, so they run in the app's process, which is the only place that can update the Live Activity.
   - `ShiftActions` (HuddleKit, tested) does the work through the existing REST methods. A team that needs a plan or wrap-up gets "open Huddle to…" instead of a failure.
-- [~] Control Center controls and interactive widgets.
+- [x] Control Center controls and interactive widgets.
   - A Shift toggle (on = on the clock) and a Break button, plus the widget's action button (Start day / Break / Back).
-  - The widget's buttons were checked against the backend; the Control Center controls build but aren't tested in the Simulator yet.
+  - Checked in the Simulator: both controls are in the Control Center gallery, the toggle shows the real shift state, and Break started and ended a break on the server.
+  - Teams that ask for a plan or wrap-up: Start day from outside the app now refuses for a plan team (the backend only checks the plan at clock-out). End day is refused by the server. Either way Huddle opens on the plan or wrap-up sheet the next time it comes forward.
+    - Siri and Shortcuts can bring the app forward right away (`supportedModes` with `.foreground(.dynamic)`). A Control Center toggle can't: iOS refuses (error 2018), and the control just stays on.
 - [x] Live Activity and Dynamic Island.
   - Starts while you're on the clock and ends when you clock out.
   - Shows the shift time (amber on a break), the ticket and its time, and Break / Back to work / Pause ticket. It ticks on the device, with no pushes.

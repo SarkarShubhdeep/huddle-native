@@ -8,7 +8,10 @@ public struct ShiftActions: Sendable {
         case noTeam
         case notOnBreak
         case alreadyOnShift
-        /// The team wants a plan or wrap-up first, which needs the app.
+        /// The team asks for a plan before clocking in; that's written in the app.
+        case needsPlan
+        /// The team asks for a wrap-up before clocking out.
+        case needsWrapUp
         case needsApp(String)
 
         public var errorDescription: String? {
@@ -17,6 +20,8 @@ public struct ShiftActions: Sendable {
             case .noTeam: "Open Huddle and pick a team first."
             case .notOnBreak: "You’re not on a break."
             case .alreadyOnShift: "You’re already on the clock."
+            case .needsPlan: "Your team asks for a plan first. Open Huddle to write it."
+            case .needsWrapUp: "Your team asks for a wrap-up first. Open Huddle to post it."
             case let .needsApp(message): message
             }
         }
@@ -45,13 +50,16 @@ public struct ShiftActions: Sendable {
                                             todayShifts: sheet.sessions, teamName: teamName, now: now)
     }
 
-    public func startDay(teamId: String?) async throws {
+    /// Clocks in. A team that asks for a plan gets `needsPlan` instead: the
+    /// backend only checks the plan at clock-out, so the rule is kept here.
+    public func startDay(teamId: String?, requiresPlan: Bool = false) async throws {
         if try await clock.active() != nil { throw Failure.alreadyOnShift }
         guard let teamId else { throw Failure.noTeam }
+        if requiresPlan { throw Failure.needsPlan }
         do {
             _ = try await clock.start(teamId: teamId)
         } catch let error as APIError where error.serverCode == "plan-required" {
-            throw Failure.needsApp("Your team asks for a plan first. Open Huddle to write it.")
+            throw Failure.needsPlan
         }
     }
 
@@ -73,7 +81,7 @@ public struct ShiftActions: Sendable {
         do {
             _ = try await clock.stop(teamId: active.teamId)
         } catch let error as APIError where error.serverCode == "plan-required" {
-            throw Failure.needsApp("Your team asks for a wrap-up first. Open Huddle to post it.")
+            throw Failure.needsWrapUp
         }
     }
 

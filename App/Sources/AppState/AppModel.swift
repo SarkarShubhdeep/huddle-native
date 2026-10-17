@@ -108,6 +108,7 @@ final class AppModel {
         team = TeamChoice.restore(from: list, savedId: savedId)
         SharedContainer.teamId = team?.id
         SharedContainer.teamNames = Dictionary(list.map { ($0.id, $0.name) }, uniquingKeysWith: { a, _ in a })
+        SharedContainer.planTeams = Set(list.filter(\.requiresPlan).map(\.id))
     }
 
     private static func teamKey(_ userId: String) -> String { "team.\(userId)" }

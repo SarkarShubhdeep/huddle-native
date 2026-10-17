@@ -62,6 +62,11 @@ struct MainShell: View {
         // Live data without a socket: refresh every 30 s while the app is in front.
         .task(id: scenePhase) {
             guard scenePhase == .active, let now else { return }
+            if let sheet = SharedContainer.pendingSheet {
+                SharedContainer.pendingSheet = nil
+                tab = .now
+                now.requestedSheet = sheet
+            }
             await now.refresh()
             await inbox?.refresh()
             while !Task.isCancelled {
