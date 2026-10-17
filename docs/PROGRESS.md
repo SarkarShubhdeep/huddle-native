@@ -181,7 +181,7 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
     - an infinite loop in list paragraph styling
     - keystrokes dropped because typing attributes were reset on every key
     - list text inheriting the marker's gray
-- [ ] **You:** post from the app and see the post in the web app.
+- [x] **You:** post from the app and see the post in the web app. Confirmed: a post from the app shows correctly in the web app's Huddle feed.
 
 ### Step 9: Inbox and Settings
 - [ ] Notifications with an unread badge, swipe to mark read or delete, and Mark all read.
