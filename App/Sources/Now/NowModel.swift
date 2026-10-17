@@ -21,7 +21,7 @@ struct NowData: Codable, Sendable {
 @MainActor
 @Observable
 final class NowModel {
-    enum Action: Equatable { case startDay, takeBreak, resume, endDay, pauseTimer }
+    enum Action: Equatable { case startDay, takeBreak, resume, endDay, pauseTimer, startTimer }
 
     let data: Resource<NowData>
     /// The action in flight, for button spinners.
@@ -117,8 +117,9 @@ final class NowModel {
 
     // MARK: Actions
 
-    /// Clocks in to `teamId`, after posting `plan` when the team asks for one.
-    func startDay(teamId: String, plan: String?) async -> Bool {
+    /// Clocks in to `teamId`, after posting `plan` when the team asks for one,
+    /// and with `ticketId`, starts that ticket's timer too ("Start day & timer").
+    func startDay(teamId: String, plan: String?, ticketId: String? = nil) async -> Bool {
         await perform(.startDay) {
             var planPostId: String?
             if let plan, !plan.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -129,9 +130,33 @@ final class NowModel {
                 ))
             }
             let event = try await self.clock.start(teamId: teamId, planPostId: planPostId)
-            return { $0.active = event }
+            var session: TimerSession?
+            if let ticketId {
+                session = try await self.timers.startTicket(ticketId, on: self.workDay.key(for: .now)).session
+            }
+            return { data in
+                data.active = event
+                if let session { data.running = session }
+            }
         }
     }
+
+    /// Starts `ticketId`'s timer for today. The server stops any other running
+    /// timer first, so only one ever runs. Needs an open shift.
+    func startTimer(ticketId: String) async -> Bool {
+        await perform(.startTimer) {
+            let created = try await self.timers.startTicket(ticketId, on: self.workDay.key(for: .now))
+            return { data in data.running = created.session }
+        }
+    }
+
+    /// Today's tracked seconds per ticket id, for rows and the time sort.
+    func secondsToday(at now: Date = .now) -> [String: Int] {
+        entries.reduce(into: [:]) { $0[$1.entry.ticketId, default: 0] += $1.totalSeconds(at: now) }
+    }
+
+    /// The ticket whose timer is running, by ticket id.
+    var runningTicketId: String? { runningEntry?.entry.ticketId }
 
     func takeBreak() async {
         guard let teamId = active?.teamId else { return }

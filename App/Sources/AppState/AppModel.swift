@@ -47,6 +47,11 @@ final class AppModel {
         me = nil
     }
 
+    /// An API client for the signed-in user.
+    var api: APIClient? { session.makeClient() }
+    var userId: String? { session.session?.userId }
+    var snapshotStore: any SnapshotStore { snapshots }
+
     /// The shift model for the signed-in user, or nil when signed out.
     func makeNowModel() -> NowModel? {
         guard let current = session.session, let api = session.makeClient() else { return nil }

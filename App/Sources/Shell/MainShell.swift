@@ -19,7 +19,11 @@ struct MainShell: View {
                             .navigationTitle(tab.title)
                             .toolbar {
                                 ToolbarItem(placement: .topBarLeading) { TeamSwitcher() }
-                                ToolbarItem(placement: .topBarTrailing) { AccountMenu() }
+                                // Profile and settings live behind the avatar on Now; the
+                                // other tabs use the space for their own actions (canvas).
+                                if tab == .now {
+                                    ToolbarItem(placement: .topBarTrailing) { AccountMenu() }
+                                }
                             }
                     }
                 }
@@ -66,6 +70,8 @@ private struct TabRoot: View {
     var body: some View {
         if tab == .now, model.team != nil {
             NowScreen(onShowTimesheet: onShowTimesheet)
+        } else if tab == .tickets, model.team != nil {
+            TicketsScreen()
         } else {
             placeholderView
         }

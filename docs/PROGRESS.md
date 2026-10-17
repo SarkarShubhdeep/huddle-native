@@ -119,9 +119,24 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
 - [ ] **You:** start the day, take a break, resume, end the day, and confirm it all in the web app.
 
 ### Step 6: Tickets and timers
-- [ ] Edge-to-edge list, filter and sort pills, the search screen, swipe actions.
-- [ ] Start and stop timers (`timers.createEntry` / `startSession` / `stopSession`), offering "Start day & timer" when you're clocked out.
-- [ ] New-ticket sheet.
+- [x] Edge-to-edge list, filter and sort pills, the search screen, swipe actions.
+  - Pills: a filter count (with "Clear filters"), Status ("Open" means not done), Assignee (me, anyone, or a teammate), Priority (multi-select), and Sort (field and direction).
+  - Filtering and sorting run on the device through `TicketQuery` (HuddleKit, tested), and the choice is remembered.
+  - Rows show status, priority, assignees and today's time; the running row is tinted and ticks.
+  - Swipe right to start or pause the timer; swipe left for Done or In progress.
+  - Search is its own screen with the native search field. Scopes: this team, all your teams (loaded when picked), and assigned to me. Matches are bold, and the last five searches are kept.
+  - The avatar now sits only on Now, as on the canvas; Tickets uses that space for Search and New.
+- [x] Start and stop timers (`timers.createEntry` / `startSession` / `stopSession`), offering "Start day & timer" when you're clocked out.
+  - Play on any row starts that ticket. The server stops whatever was running, so only one runs.
+  - Off the clock, a sheet offers "Start day & timer". When the team requires a plan, the plan sheet opens instead with "Working on <ticket>." filled in, then posts the plan, clocks in and starts the timer.
+- [x] New-ticket sheet: title, details, priority, assignees (team members), GitHub link (https only), and "Start timer now" (on shift only). The ticket shows at once, then a refetch confirms it.
+- [x] Checked in the Simulator against the local backend:
+  - Off the clock: "Start day & timer" → plan sheet → one shift and one running timer on that ticket.
+  - Switching tickets leaves exactly one timer running.
+  - A new ticket was created (High, assigned to me) with its timer started.
+  - Pausing from the row stopped the timer.
+  - Search with highlights and scopes.
+  - Not yet exercised: swipe actions and the filter menus' choices.
 - [ ] **You:** run a timer, switch tickets, and confirm only one runs at a time.
 
 ### Step 7: Timesheet

@@ -5,6 +5,8 @@ import SwiftUI
 /// until then the plan is plain text (markdown is kept as typed).
 struct PlanSheet: View {
     let teamName: String
+    /// Text to start from, e.g. the ticket you're about to time.
+    var initialText = ""
     /// Posts the plan and starts the day; returns whether it worked.
     var start: (String) async -> Bool
 
@@ -60,7 +62,11 @@ struct PlanSheet: View {
         }
         .presentationDragIndicator(.visible)
         .interactiveDismissDisabled(isStarting)
-        .onAppear { focused = true; now.actionError = nil }
+        .onAppear {
+            if text.isEmpty { text = initialText }
+            focused = true
+            now.actionError = nil
+        }
     }
 
     private func submit() {
