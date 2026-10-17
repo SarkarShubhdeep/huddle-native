@@ -100,13 +100,13 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
   - Off the clock: Start day. Working: Take a break, with a quieter End day. On break: Back to work. Day done: See timesheet, with a quiet "Start another shift".
   - Clock actions use the active shift's team; starting uses the selected team.
 - [x] Live shift timer, and the "counts as a meal break in N min" note. Both tick on the device (`ShiftClock`), and the dock's timer strip ticks on every tab.
-- [~] Plan and wrap-up sheets when the team requires them, including handling the `plan-required` error.
+- [x] Plan and wrap-up sheets when the team requires them, including handling the `plan-required` error.
   - Plan sheet: posts the plan (`huddle.createPost`), then clocks in with its id, which links it to the shift.
   - Wrap-up sheet, offered on every End day: shows the day's time and work, with a note pre-filled from today's tickets.
     - It keeps the plan and adds "**Wrap-up:**" under it, because `huddle.updatePost` replaces the whole text.
     - With no plan, it creates a wrap-up post linked to the shift, as the web app does.
     - "End day without posting" is hidden when the team requires a wrap-up. `plan-required` shows as a plain message.
-  - Not yet checked against a team that requires plans; none of the local test teams does.
+  - Checked on the local Development team, which requires plans. The plan was posted and linked to the new shift. At End day the sheet found the plan and hid "End day without posting". The wrap-up went under the plan in the same post, stamped, and the server accepted the clock-out.
   - The plan and wrap-up text are plain text until the rich composer in Step 8.
 - [x] Today's ticket timer and today's work list: the running ticket with Pause, the ticket a break paused, and today's work items with their times.
 - [x] Optimistic updates, a refetch after each action, and haptics.
@@ -114,6 +114,8 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
   - `Resource.refetch()` (HuddleKit, tested) then confirms. It drops the result of a poll that was already in flight, which would otherwise bring back the pre-write state.
   - Data refreshes when the app becomes active and every 30 s while it's in front. Success and error haptics.
 - [x] Checked in the Simulator against the local backend: start day, take a break, back to work, end day with a wrap-up. The server state matched each step (breaks closed, wrap-up linked and stamped, no open shift).
+  - "Day done" covers the whole day: every shift since midnight, with their total and the span.
+  - When the backend crashed mid-test, the screen kept its data and showed the refresh banner, as designed.
 - [ ] **You:** start the day, take a break, resume, end the day, and confirm it all in the web app.
 
 ### Step 6: Tickets and timers

@@ -121,14 +121,16 @@ struct NowScreen: View {
                 isBusy: busy
             )
         case .ended:
-            let shift = now.endedToday
-            let worked = ShiftClock.workSeconds(shift, at: date)
+            // The whole day, which may be more than one shift.
+            let shifts = todaysShifts(at: date)
+            let worked = now.workDay.workedSeconds(in: shifts, now: date)
+            let unpaid = shifts.reduce(0) { $0 + $1.deductedBreakSeconds }
             NowHero(
                 phase: .ended, time: String(format: "%d:%02d", worked / 3600, (worked % 3600) / 60),
                 timeAccessibilityLabel: "Worked \(ShiftClockFormat.spoken(worked))",
-                subtitle: shift.map { range($0.startTime, $0.endTime) } ?? "",
+                subtitle: dayRange(shifts),
                 facts: [
-                    .init(label: "Unpaid meal", value: ShiftClockFormat.duration(shift?.deductedBreakSeconds ?? 0)),
+                    .init(label: "Unpaid meal", value: ShiftClockFormat.duration(unpaid)),
                     .init(label: "Tickets", value: "\(now.entries.count)"),
                     .init(label: "This week", value: ShiftClockFormat.duration(weekSeconds(at: date))),
                 ],
@@ -197,6 +199,18 @@ struct NowScreen: View {
         let since = "Since \(active.startTime.formatted(date: .omitted, time: .shortened))"
         guard active.teamId != app.team?.id, let team = activeTeam else { return since }
         return "\(since) · \(team.name)"
+    }
+
+    private func todaysShifts(at date: Date) -> [ClockEvent] {
+        let today = now.workDay.startOfDay(date)
+        return (now.data.value?.week ?? []).filter { $0.startTime >= today }.sorted { $0.startTime < $1.startTime }
+    }
+
+    /// "9:02 AM – 5:21 PM", plus how many shifts when there was more than one.
+    private func dayRange(_ shifts: [ClockEvent]) -> String {
+        guard let first = shifts.first, let last = shifts.last else { return "" }
+        let text = range(first.startTime, last.endTime)
+        return shifts.count > 1 ? "\(text) · \(shifts.count) shifts" : text
     }
 
     private func range(_ start: Date, _ end: Date?) -> String {
