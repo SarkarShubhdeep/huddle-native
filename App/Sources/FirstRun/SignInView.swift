@@ -1,4 +1,5 @@
 import HuddleKit
+import OSLog
 import SwiftUI
 
 /// First run, step 2: email and password, with errors shown inline in plain words.
@@ -38,7 +39,7 @@ struct SignInView: View {
 
                 EdgeToEdgeList(separatorInset: Spacing.xl) {
                     fieldRow("Email") {
-                        TextField("you@company.com", text: $email)
+                        TextField("Email", text: $email, prompt: Text(verbatim: "you@company.com").foregroundStyle(Palette.textSecondary.opacity(0.6)))
                             .textContentType(.username)
                             .keyboardType(.emailAddress)
                             .textInputAutocapitalization(.never)
@@ -48,7 +49,7 @@ struct SignInView: View {
                             .onSubmit { focused = .password }
                     }
                     fieldRow("Password") {
-                        SecureField("Required", text: $password)
+                        SecureField("Password", text: $password, prompt: Text("Required").foregroundStyle(Palette.textSecondary.opacity(0.6)))
                             .textContentType(.password)
                             .focused($focused, equals: .password)
                             .submitLabel(.go)
@@ -113,6 +114,8 @@ struct SignInView: View {
         .contentShape(Rectangle())
     }
 
+    private static let log = Logger(subsystem: "HuddleNative", category: "SignIn")
+
     private func submit() {
         guard canSubmit else { return }
         focused = nil
@@ -122,8 +125,10 @@ struct SignInView: View {
             do {
                 try await signIn(email, password)
             } catch {
+                Self.log.error("Sign-in failed: \(String(describing: error), privacy: .public)")
+                // Keep the password so a typo in the email can be fixed; the
+                // message clears as soon as either field is edited.
                 self.error = (error as? LocalizedError)?.errorDescription ?? "Sign-in failed. Try again."
-                password = ""
                 focused = .password
             }
             isSigningIn = false

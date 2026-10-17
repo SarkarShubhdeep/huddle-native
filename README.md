@@ -39,11 +39,13 @@ Re-run `xcodegen` whenever `project.yml` changes or you add or remove files. The
 
 ## Running against your local TimeHuddle stack
 
-1. In your `timehuddle` checkout, start the Meteor backend:
+1. In your `timehuddle` checkout, start MongoDB (it holds your local test users), then the Meteor backend pointed at it:
    ```sh
-   cd meteor-backend && pm2 start ecosystem.config.cjs --only timehuddle-meteor
+   docker compose up -d mongodb
+   cd meteor-backend
+   MONGO_URL='mongodb://127.0.0.1:27017/timehuddle?directConnection=true' pm2 start npm --name timehuddle-meteor -- start
    ```
-   It listens on port **3100**.
+   It listens on port **3100**. Without `MONGO_URL`, Meteor uses its own empty database, and no test account can sign in.
 2. Put your iPhone on the same Wi‑Fi as the Mac.
 3. Launch Huddle and enter the Mac's address, e.g. `192.168.1.24`. The port defaults to 3100.
 4. When iOS asks to find devices on your local network, tap **Allow**.

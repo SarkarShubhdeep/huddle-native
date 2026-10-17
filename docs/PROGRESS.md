@@ -86,10 +86,13 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
 - [ ] **You:** compare the previews with the design canvas.
 
 ### Step 4: First run (server and sign-in)
-- [ ] Server picker: This Wi‑Fi, Development, Production, Custom URL.
-- [ ] "Test connection" via `GET /`, which also triggers the local network prompt.
-- [ ] Email and password sign-in with inline errors: wrong password, suspended account, reset required.
-- [ ] Restore the last-used team, and the team switcher in the nav title.
+- [x] Server picker: This Wi‑Fi, Development, Production, Custom URL.
+  - Development and Production come from `HN_DEV_SERVER_URL` / `HN_PROD_SERVER_URL` in `Local.xcconfig`, and stay hidden until set. Not set yet.
+  - Edge-to-edge rows, as DESIGN.md requires; the canvas board draws them in a box.
+- [x] "Test connection" via `GET /`, which also triggers the local network prompt. `ServerProbe` (HuddleKit, tested): runs as you type and before Continue, capped at 5 s, and reports reachable with latency, not a TimeHuddle server, or unreachable.
+- [x] Email and password sign-in with inline errors: wrong password, suspended account, reset required. The messages come from `LoginError`. There's no "Forgot password?" link, because the app has no reset flow in v1.
+- [x] Restore the last-used team, and the team switcher in the nav title. `TeamChoice` (HuddleKit, tested): the saved team, else the first shared team, else the personal one. Teams are cached per user and refresh when the app becomes active. The avatar menu has Sign out, until Settings in Step 9.
+- [x] Checked in the Simulator against the local backend, signed in as a test user. The connection test answers in about 55 ms. Sign-in lands on the saved team, switching teams works, and both the session and the team survive a relaunch.
 - [ ] **You:** sign in against your local backend from a device.
 
 ### Step 5: Now screen
