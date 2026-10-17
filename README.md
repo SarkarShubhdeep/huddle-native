@@ -5,7 +5,8 @@ An experimental native iOS app for [TimeHuddle](https://github.com/mieweb/timehu
 It talks to the **existing TimeHuddle Meteor backend, unchanged**: your local dev stack on the same Wi‑Fi, or the dev/prod servers. It has its own design and user flow, and doesn't reuse anything from the Capacitor app or `@mieweb/ui`.
 
 - Design review (screens, tokens, decisions): see [`docs/DESIGN.md`](docs/DESIGN.md)
-- Build plan and progress: see [`docs/PROGRESS.md`](docs/PROGRESS.md)
+- Plan and guidelines every change follows: see [`docs/PLAN.md`](docs/PLAN.md)
+- Step-by-step progress: see [`docs/PROGRESS.md`](docs/PROGRESS.md)
 
 ## Requirements
 

@@ -15,9 +15,9 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
 - [x] `Config/Base.xcconfig`, plus a gitignored `Local.xcconfig` for the signing team and LAN address.
 - [x] README: prerequisites, `xcodegen`, running against the local backend, troubleshooting the local network prompt.
 - [x] App icon from the approved concept (lime ring on graphite, plus dark and tinted variants).
-- [x] `.gitignore`, `docs/DESIGN.md`, this file.
+- [x] `.gitignore`, `docs/DESIGN.md`, `docs/PLAN.md` (plan and guidelines), this file.
 - [x] HuddleKit's first unit, `ServerEndpoint`, with Swift Testing tests.
-- [ ] Push.
+- [ ] Push. Blocked until the GitHub repo exists and this session can reach it.
 - [ ] **You:** run `brew install xcodegen && xcodegen`, open the project in Xcode, and confirm the empty app builds and runs on a device.
 
 ### Step 2: HuddleKit core
