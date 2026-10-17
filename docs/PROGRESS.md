@@ -29,17 +29,17 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
   - [x] `APIError`
 - [x] `MeteorLogin`: a one-shot WebSocket connect → login → close, capped at 10 s, sending the SHA-256 digest plus `raw`.
 - [x] `Keychain` + `SessionStore`: save, restore, and sign out on `unauthorized`.
-- [ ] Models:
-  - [ ] Team
-  - [ ] ClockEvent and Break
-  - [ ] Ticket
-  - [ ] WorkItem and TimerSession
-  - [ ] HuddlePost and Attachment
-  - [ ] Notification
-  - [ ] PublicUser
-  - [ ] Timesheet
-  - [ ] media-URL re-basing
-- [ ] Services: Clock, Timers, Tickets, Huddle, Timesheet, Notifications, Users, Teams.
+- [x] Models:
+  - [x] Team
+  - [x] ClockEvent and Break
+  - [x] Ticket
+  - [x] WorkItem and TimerSession
+  - [x] HuddlePost and Attachment
+  - [x] Notification
+  - [x] PublicUser
+  - [x] Timesheet
+  - [x] media-URL re-basing
+- [x] Services: Clock (with timesheet), Timers, Tickets, Huddle, Notifications, Users, Teams.
 - [ ] `Resource<T>` refresh engine:
   - [ ] single-flight
   - [ ] a detached fetch
