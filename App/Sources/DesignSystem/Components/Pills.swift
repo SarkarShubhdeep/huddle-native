@@ -70,6 +70,8 @@ struct SortOption<Key: Hashable>: Identifiable {
     let title: String
     var descending = "Newest first"
     var ascending = "Oldest first"
+    /// The direction this field starts in when picked (titles read A to Z).
+    var startsAscending = false
     var id: Key { key }
 }
 
@@ -84,7 +86,14 @@ struct SortPill<Key: Hashable>: View {
     var body: some View {
         FilterPill(title: "Sort") {
             Section("Sort by") {
-                Picker("Sort by", selection: $key) {
+                Picker("Sort by", selection: Binding(
+                    get: { key },
+                    set: { newKey in
+                        // A new field starts in its natural direction.
+                        if newKey != key { ascending = options.first { $0.key == newKey }?.startsAscending ?? false }
+                        key = newKey
+                    }
+                )) {
                     ForEach(options) { Text($0.title).tag($0.key) }
                 }
                 .pickerStyle(.inline)

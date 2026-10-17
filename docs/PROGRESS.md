@@ -120,7 +120,7 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
 
 ### Step 6: Tickets and timers
 - [x] Edge-to-edge list, filter and sort pills, the search screen, swipe actions.
-  - Pills: a filter count (with "Clear filters"), Status ("Open" means not done), Assignee (me, anyone, or a teammate), Priority (multi-select), and Sort (field and direction).
+  - Pills: a filter count (with "Clear filters"), Status ("Not done" by default), Assignee (me, anyone, or a teammate), Priority (multi-select), and Sort (field and direction).
   - Filtering and sorting run on the device through `TicketQuery` (HuddleKit, tested), and the choice is remembered.
   - Rows show status, priority, assignees and today's time; the running row is tinted and ticks.
   - Swipe right to start or pause the timer; swipe left for Done or In progress.
@@ -136,7 +136,16 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
   - A new ticket was created (High, assigned to me) with its timer started.
   - Pausing from the row stopped the timer.
   - Search with highlights and scopes.
-  - Not yet exercised: swipe actions and the filter menus' choices.
+  - Swipe actions and every filter menu checked against the server.
+    - In progress, Done and Reopen change the status, and swipe start/pause run the timer.
+    - Status, assignee, multi-priority and sort filter live. The count pill and empty-state "Clear filters" reset them.
+    - Fixes from that pass:
+      - A new sort field starts in its natural direction (Title A to Z, the others newest/highest first).
+      - The summary keeps "A to Z" capitalized.
+      - The menus' dividers render.
+      - The not-done filter is called "Not done", so it doesn't clash with the Open status.
+      - In progress swipes gray, Done green.
+      - Done tickets get Reopen.
 - [ ] **You:** run a timer, switch tickets, and confirm only one runs at a time.
 
 ### Step 7: Timesheet

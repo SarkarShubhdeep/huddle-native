@@ -114,13 +114,16 @@ struct TicketsScreen: View {
                 .listRowBackground(isRunning ? Palette.limeSoft : Palette.canvas)
                 .alignmentGuide(.listRowSeparatorLeading) { _ in 42 }
                 .swipeActions(edge: .trailing) {
-                    if ticket.status != TicketStatus.closed.rawValue {
+                    if ticket.status == TicketStatus.closed.rawValue {
+                        Button("Reopen", systemImage: "arrow.uturn.backward") { setStatus(.open, ticket, in: model) }
+                            .tint(Palette.textSecondary)
+                    } else {
                         Button("Done", systemImage: "checkmark") { setStatus(.closed, ticket, in: model) }
                             .tint(Palette.done)
-                    }
-                    if ticket.status != TicketStatus.inProgress.rawValue {
-                        Button("In progress", systemImage: "arrow.forward") { setStatus(.inProgress, ticket, in: model) }
-                            .tint(Palette.limeText)
+                        if ticket.status != TicketStatus.inProgress.rawValue {
+                            Button("In progress", systemImage: "arrow.forward") { setStatus(.inProgress, ticket, in: model) }
+                                .tint(.gray)
+                        }
                     }
                 }
                 .swipeActions(edge: .leading) {
@@ -218,7 +221,7 @@ struct TicketsScreen: View {
 
     private func summary(_ count: Int, _ query: TicketQuery) -> String {
         let order = query.ascending ? query.sort.ascendingTitle : query.sort.descendingTitle
-        return "\(count) \(count == 1 ? "ticket" : "tickets") · \(query.sort.title), \(order.lowercased())"
+        return "\(count) \(count == 1 ? "ticket" : "tickets") · \(query.sort.title) · \(order)"
     }
 }
 
@@ -244,12 +247,17 @@ private struct TicketPills: View {
 
             FilterPill(title: statusTitle, isActive: model.query.status != .all) {
                 Picker("Status", selection: $model.query.status) {
-                    Text("Open").tag(TicketQuery.StatusFilter.open)
+                    Text("Not done").tag(TicketQuery.StatusFilter.open)
                     Text("All statuses").tag(TicketQuery.StatusFilter.all)
-                    Divider()
-                    ForEach(TicketStatus.allCases, id: \.self) { status in
-                        Text(status.label).tag(TicketQuery.StatusFilter.only(status.rawValue))
+                }
+                .pickerStyle(.inline)
+                Section("Only") {
+                    Picker("Only", selection: $model.query.status) {
+                        ForEach(TicketStatus.allCases, id: \.self) { status in
+                            Text(status.label).tag(TicketQuery.StatusFilter.only(status.rawValue))
+                        }
                     }
+                    .pickerStyle(.inline)
                 }
             }
 
@@ -257,12 +265,17 @@ private struct TicketPills: View {
                 Picker("Assignee", selection: $model.query.assignee) {
                     Text("Me").tag(TicketQuery.AssigneeFilter.me)
                     Text("Anyone").tag(TicketQuery.AssigneeFilter.anyone)
-                    let others = (model.members.value ?? []).filter { $0.id != app.userId }
-                    if !others.isEmpty {
-                        Divider()
-                        ForEach(others) { member in
-                            Text(member.displayName).tag(TicketQuery.AssigneeFilter.user(member.id))
+                }
+                .pickerStyle(.inline)
+                let others = (model.members.value ?? []).filter { $0.id != app.userId }
+                if !others.isEmpty {
+                    Section("Teammates") {
+                        Picker("Teammates", selection: $model.query.assignee) {
+                            ForEach(others) { member in
+                                Text(member.displayName).tag(TicketQuery.AssigneeFilter.user(member.id))
+                            }
                         }
+                        .pickerStyle(.inline)
                     }
                 }
             }
@@ -271,14 +284,15 @@ private struct TicketPills: View {
                             label: \.title, selection: $model.query.priorities)
 
             SortPill(options: TicketQuery.Sort.allCases.map {
-                SortOption(key: $0, title: $0.title, descending: $0.descendingTitle, ascending: $0.ascendingTitle)
+                SortOption(key: $0, title: $0.title, descending: $0.descendingTitle, ascending: $0.ascendingTitle,
+                           startsAscending: $0 == .title)
             }, key: $model.query.sort, ascending: $model.query.ascending)
         }
     }
 
     private var statusTitle: String {
         switch model.query.status {
-        case .open: "Open"
+        case .open: "Not done"
         case .all: "Status"
         case let .only(raw): TicketStatus(raw: raw).label
         }
