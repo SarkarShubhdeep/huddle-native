@@ -80,6 +80,7 @@ struct ServerPickerView: View {
                 HStack(spacing: 14) {
                     Image(systemName: kind.systemImage)
                         .font(.body.weight(.semibold))
+                        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
                         .foregroundStyle(isSelected ? Palette.limeText : Palette.textSecondary)
                         .frame(width: 30, height: 30)
                         .background(isSelected ? Palette.limeSoft : Palette.fill, in: RoundedRectangle(cornerRadius: 8))

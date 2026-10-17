@@ -35,6 +35,8 @@ struct NowHero: View {
                 Spacer()
                 Image(systemName: icon)
                     .font(.title3.weight(.semibold))
+                    // Sits in a fixed tile; text around it still scales.
+                    .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
                     .foregroundStyle(tone.foreground)
                     .frame(width: 44, height: 44)
                     .background(tone.background, in: RoundedRectangle(cornerRadius: Radius.tile))

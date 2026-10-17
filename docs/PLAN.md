@@ -27,7 +27,14 @@ Huddle Native is an experimental native iOS app in SwiftUI. It talks to the **ex
 - **Step 2 (HuddleKit core): done.** APIClient, one-shot login, Keychain session, models, services, the never-hang `Resource<T>` and `ShiftClock`, with 72 tests passing.
   - The cache is JSON snapshots, not SwiftData: it's portable and enough for stale-while-revalidate.
 - **Steps 1–2 confirmed on your Mac:** the app runs in the Simulator, and `swift test` passes in Terminal and in Xcode.
-- **Next:** Step 3 (design system in code), worked on from a Claude Code session running on the Mac, so it can build and use the Simulator.
+- **Steps 3–11: done** on the Mac, each checked in the Simulator against the local backend (see `docs/PROGRESS.md` for what was verified and how).
+  - The app covers Now, Tickets, Huddle, Time, Inbox and Settings, plus App Intents, Control Center, the Live Activity and widgets.
+  - 123 HuddleKit tests.
+- **Changed from the original plan:**
+  - The dock is one custom glass shape (strip and tabs together), as on the canvas, rather than the system tab bar with a bottom accessory.
+  - The default refresh wait is 5.5 s, so the spinner is gone within the 6 s promise with room for the main thread.
+  - The session lives in a shared keychain group so the widgets and controls can act as you.
+- **Next:** on-device checks (the **You:** items in PROGRESS), then the known gaps in the README.
 
 ## Guidelines (apply to every step)
 
@@ -54,7 +61,7 @@ Huddle Native is an experimental native iOS app in SwiftUI. It talks to the **ex
   - stale data stays on screen
   - single-flight: a second pull joins the first
   - the fetch runs in its own Task, so SwiftUI cancellation can't kill it
-  - the spinner stops within 6 s, and late data still lands
+  - the spinner stops within 6 s (callers wait at most 5.5 s), and late data still lands
   - errors show as a non-blocking banner
 - Live data without DDP: refresh when the app becomes active, poll every 30 s on the visible screen, refetch after every action, with optimistic updates.
 

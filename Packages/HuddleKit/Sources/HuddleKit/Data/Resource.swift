@@ -30,6 +30,11 @@ public final class Resource<Value: Codable & Sendable> {
     @ObservationIgnored private var generation = 0
     @ObservationIgnored private var acceptFrom = 0
 
+    /// How long a caller waits for a fetch. The promise is "the spinner stops
+    /// within 6 s"; half a second is left for the main thread to get back to
+    /// the caller (measured at about 0.25 s in the Simulator).
+    public nonisolated static var maxWait: Duration { .milliseconds(5500) }
+
     public init(
         cacheKey: String? = nil,
         store: (any SnapshotStore)? = nil,
@@ -41,16 +46,24 @@ public final class Resource<Value: Codable & Sendable> {
     }
 
     /// First appearance: show the cached copy right away, then refresh.
-    public func load(maxWait: Duration = .seconds(6)) async {
+    public func load(maxWait: Duration = Resource.maxWait) async {
+        showCached()
+        await refresh(maxWait: maxWait)
+    }
+
+    /// Shows the cached copy, if there is one and nothing newer is shown.
+    /// Returns whether a value is now available.
+    @discardableResult
+    public func showCached() -> Bool {
         if value == nil, let cacheKey, let snapshot = store?.load(Value.self, key: cacheKey) {
             value = snapshot.value
             lastUpdated = snapshot.savedAt
         }
-        await refresh(maxWait: maxWait)
+        return value != nil
     }
 
     /// Fetches fresh data. Returns when it lands or after `maxWait`, whichever is first.
-    public func refresh(maxWait: Duration = .seconds(6)) async {
+    public func refresh(maxWait: Duration = Resource.maxWait) async {
         let task = inFlight ?? start()
         await Self.wait(for: task, atMost: maxWait)
     }
@@ -59,7 +72,7 @@ public final class Resource<Value: Codable & Sendable> {
     /// write and may bring back the old state, so its result is dropped and a
     /// new fetch starts as soon as it ends. Refetches made meanwhile share
     /// that new fetch. Returns when it lands or after `maxWait`.
-    public func refetch(maxWait: Duration = .seconds(6)) async {
+    public func refetch(maxWait: Duration = Resource.maxWait) async {
         guard let running = inFlight else {
             await Self.wait(for: start(), atMost: maxWait)
             return

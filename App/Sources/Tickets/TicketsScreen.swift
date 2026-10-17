@@ -80,7 +80,7 @@ struct TicketsScreen: View {
                 TicketPills(model: model)
                     .padding(.bottom, Spacing.xs)
                 if model.tickets.error != nil, model.tickets.value != nil {
-                    RefreshBanner(message: "Couldn’t refresh tickets.") { Task { await model.refresh() } }
+                    RefreshBanner(message: "Couldn’t refresh tickets.") { await timedRefresh("Tickets") { await model.refresh() } }
                         .padding(.horizontal, Spacing.margin)
                 }
                 if let message = now.actionError ?? statusError {
@@ -135,7 +135,7 @@ struct TicketsScreen: View {
         .listStyle(.plain)
         .environment(\.defaultMinListRowHeight, 0)
         .scrollContentBackground(.hidden)
-        .refreshable { await model.refresh() }
+        .refreshable { await timedRefresh("Tickets") { await model.refresh() } }
         .overlay {
             if model.tickets.value == nil, model.tickets.error != nil {
                 StatusView.unreachable(

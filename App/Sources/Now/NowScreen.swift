@@ -15,7 +15,7 @@ struct NowScreen: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.l) {
                 if let error = now.data.error, now.data.value != nil {
-                    RefreshBanner(message: banner(for: error)) { Task { await now.refresh() } }
+                    RefreshBanner(message: banner(for: error)) { await timedRefresh("Now") { await now.refresh() } }
                 }
                 if let message = now.actionError {
                     InlineError(message: message)
@@ -45,7 +45,7 @@ struct NowScreen: View {
             .springAnimation(value: now.phase)
         }
         .background(Palette.canvas)
-        .refreshable { await now.refresh() }
+        .refreshable { await timedRefresh("Now") { await now.refresh() } }
         .navigationSubtitle(Date.now.formatted(.dateTime.weekday(.wide).month(.wide).day()))
         .sheet(isPresented: $showPlan) {
             PlanSheet(teamName: app.team?.name ?? "Your team") { plan in

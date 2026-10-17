@@ -1,3 +1,4 @@
+import OSLog
 import SwiftUI
 
 /// A quiet, non-blocking banner shown when a refresh fails. The data under it
@@ -5,7 +6,11 @@ import SwiftUI
 struct RefreshBanner: View {
     /// "Couldn't refresh. Showing data from 2 min ago."
     let message: String
-    var onRetry: (() -> Void)?
+    /// Runs the refresh again; the button shows a spinner until it returns
+    /// (at most 6 s, like every refresh).
+    var onRetry: (@MainActor () async -> Void)?
+
+    @State private var isRetrying = false
 
     var body: some View {
         HStack(spacing: 10) {
@@ -16,14 +21,24 @@ struct RefreshBanner: View {
                 .font(.footnote.weight(.semibold))
                 .frame(maxWidth: .infinity, alignment: .leading)
             if let onRetry {
-                Button("Retry", action: onRetry)
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(Palette.textPrimary)
-                    .padding(.horizontal, Spacing.m)
-                    .frame(minHeight: 30)
-                    .background(Palette.surface, in: Capsule())
-                    .frame(minHeight: 44)
-                    .contentShape(Rectangle())
+                Button {
+                    isRetrying = true
+                    Task {
+                        await onRetry()
+                        isRetrying = false
+                    }
+                } label: {
+                    if isRetrying { ProgressView().controlSize(.small) } else { Text("Retry") }
+                }
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(Palette.textPrimary)
+                .padding(.horizontal, Spacing.m)
+                .frame(minWidth: 64, minHeight: 30)
+                .background(Palette.surface, in: Capsule())
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
+                .disabled(isRetrying)
+                .accessibilityLabel(isRetrying ? "Retrying" : "Retry")
             }
         }
         .foregroundStyle(Palette.breakText)
@@ -34,6 +49,19 @@ struct RefreshBanner: View {
         .accessibilityElement(children: .contain)
     }
 }
+
+/// Times a refresh and logs it (Console, subsystem HuddleNative, category
+/// Refresh), to check the 6-second promise on a device.
+@MainActor
+func timedRefresh(_ name: String, _ refresh: @MainActor () async -> Void) async {
+    let clock = ContinuousClock()
+    let start = clock.now
+    await refresh()
+    let elapsed = clock.now - start
+    refreshLog.info("\(name, privacy: .public) refresh returned after \(elapsed.components.seconds, privacy: .public).\(String(format: "%03d", elapsed.components.attoseconds / 1_000_000_000_000_000), privacy: .public) s")
+}
+
+private let refreshLog = Logger(subsystem: "HuddleNative", category: "Refresh")
 
 /// A full-screen state with exactly one next step: empty lists, an unreachable
 /// server, an error with nothing cached to show.

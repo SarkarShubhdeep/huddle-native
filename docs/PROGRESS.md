@@ -225,7 +225,17 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
 - [ ] **You:** clock in from Control Center and watch the Live Activity tick, on a device.
 
 ### Step 11: Hardening
-- [ ] Refresh torture test: background the app for 5+ minutes, use airplane mode, kill the backend mid-refresh. On every tab the spinner must stop within 6 s and the old data must stay.
-- [ ] VoiceOver, the largest Dynamic Type size, Reduce Motion, Reduce Transparency.
-- [ ] Dock clearance: on every screen, scroll to the end with and without the timer strip and at the largest text size, and confirm nothing is hidden behind the dock.
-- [ ] Update the docs and list the known gaps.
+- [x] Refresh torture test: background the app for 5+ minutes, use airplane mode, kill the backend mid-refresh. On every tab the spinner must stop within 6 s and the old data must stay.
+  - Frozen backend (process stopped with SIGSTOP, so requests hang until the timeout): pull to refresh and Retry on Now, Inbox, Huddle and Time all returned in 2.6–5.6 s, logged by the new `timedRefresh`. Every tab kept its data and showed the banner.
+    - The first measurement on Now was 6.2 s, over the promise. `Resource.maxWait` is now 5.5 s (HuddleKit, tested), which leaves the main thread time to return.
+  - Cold launch against a frozen server: it used to show only a spinner and a generic avatar for about 20 s. The cached teams and profile now show at once (`Resource.showCached`, tested), with Now filled in within 2 s.
+  - Backend stopped, app backgrounded and resumed: cached data and the banner. After the restart, Retry brought fresh data.
+  - Retry shows a spinner until its refresh returns.
+  - On a device, still to check: airplane mode and a 5-minute background.
+- [x] VoiceOver, the largest Dynamic Type size, Reduce Motion, Reduce Transparency.
+  - Every tab checked at AX5. Two icons in fixed tiles overflowed (the Now hero and Inbox rows) and are now capped; the server picker's icon got the same cap.
+  - Code audit: icon-only controls all have labels (titled buttons, the avatar, filter pills), and decorative icons are hidden. Motion uses `springAnimation`, which is off under Reduce Motion. Glass falls back to solid (checked in Step 3).
+  - Still to do: a by-ear VoiceOver pass on a device.
+- [x] Dock clearance: on every screen, scroll to the end with and without the timer strip and at the largest text size, and confirm nothing is hidden behind the dock. Every tab uses the dock's content margins, and the AX5 screenshots show the last rows clear.
+- [x] Update the docs and list the known gaps: README (layout, refresh logging, known gaps), and PLAN (status and what changed).
+- [ ] **You:** on a device: VoiceOver by ear, airplane mode, a 5-minute background, and clock in from Control Center.

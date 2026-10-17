@@ -94,12 +94,18 @@ final class AppModel {
             try await teamService.list()
         }
         teams = resource
-        // The cached list is enough to pick the team; the refresh follows.
-        await resource.load()
-        restoreTeam()
-
         let userId = current.userId
-        me = try? await UserService(api).get(userId)
+        let users = UserService(api)
+        let profile = Resource<PublicUser>(cacheKey: "me.\(userId)", store: snapshots) { try await users.get(userId) }
+        // Cached copies are enough to show the team and your avatar right
+        // away, even when the server is slow or down; refreshes follow.
+        if resource.showCached() { restoreTeam() }
+        if profile.showCached() { me = profile.value }
+        async let loadTeams: Void = resource.load()
+        async let loadProfile: Void = profile.load()
+        _ = await (loadTeams, loadProfile)
+        restoreTeam()
+        me = profile.value ?? me
     }
 
     private func restoreTeam() {

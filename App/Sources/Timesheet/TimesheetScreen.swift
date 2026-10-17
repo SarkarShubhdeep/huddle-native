@@ -25,7 +25,7 @@ struct TimesheetScreen: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.l) {
                 if let sheet, sheet.value != nil, sheet.error != nil {
-                    RefreshBanner(message: "Couldn’t refresh the timesheet.") { Task { await sheet.refresh() } }
+                    RefreshBanner(message: "Couldn’t refresh the timesheet.") { await timedRefresh("Time") { await sheet.refresh() } }
                 }
                 if let value = sheet?.value {
                     WeekBars(days: barDays(value), selectedIndex: $selected, caption: caption(value),
@@ -46,7 +46,7 @@ struct TimesheetScreen: View {
             .padding(.bottom, Spacing.l)
         }
         .background(Palette.canvas)
-        .refreshable { await sheet?.refresh() }
+        .refreshable { await timedRefresh("Time") { await sheet?.refresh() } }
         .toolbar {
             ToolbarItem(placement: .topBarLeading) { weekMenu }
             ToolbarItemGroup(placement: .topBarTrailing) {

@@ -11,7 +11,7 @@ struct InboxScreen: View {
     var body: some View {
         List {
             if model.inbox.error != nil, model.inbox.value != nil {
-                RefreshBanner(message: "Couldn’t refresh notifications.") { Task { await model.refresh() } }
+                RefreshBanner(message: "Couldn’t refresh notifications.") { await timedRefresh("Inbox") { await model.refresh() } }
                     .padding(.horizontal, Spacing.margin)
                     .listRowInsets(EdgeInsets()).listRowSeparator(.hidden).listRowBackground(Palette.canvas)
             }
@@ -45,7 +45,7 @@ struct InboxScreen: View {
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
         .background(Palette.canvas)
-        .refreshable { await model.refresh() }
+        .refreshable { await timedRefresh("Inbox") { await model.refresh() } }
         .overlay {
             if model.inbox.value == nil, model.inbox.error != nil {
                 StatusView.unreachable(host: app.session.session?.endpoint.baseURL.host() ?? "The server",
@@ -80,6 +80,7 @@ private struct NotificationRow: View {
         HStack(alignment: .top, spacing: Spacing.m) {
             Image(systemName: icon)
                 .font(.body.weight(.semibold))
+                .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
                 .foregroundStyle(notification.read ? Palette.textSecondary : Palette.limeText)
                 .frame(width: 32, height: 32)
                 .background(notification.read ? Palette.fill : Palette.limeSoft, in: Circle())

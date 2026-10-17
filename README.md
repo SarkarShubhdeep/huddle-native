@@ -66,7 +66,10 @@ project.yml              XcodeGen spec (targets, Info.plist keys, entitlements)
 Config/                  Shared and per-developer build settings
 App/                     The SwiftUI app
 Widgets/                 Widget, Control Center and Live Activity extension
-Packages/HuddleKit/      Networking, models, services, refresh engine (no UI)
+Shared/                  Code in both the app and the extension: App Intents,
+                         the Live Activity attributes, the shared keychain/App Group
+Packages/HuddleKit/      Networking, models, services, refresh engine, markdown
+                         codec, shift snapshot (no UI)
 docs/                    Design notes and the step-by-step progress checklist
 ```
 
@@ -85,3 +88,46 @@ In Xcode, ⌘U runs the same tests through the HuddleNative scheme.
 - **No backend changes.** Everything uses the REST API the backend already exposes (`POST /api/<method>`). The only exception is sign-in, which does a one-shot WebSocket login because that's the only password login the server has.
 - **No code or assets from the Capacitor app or `@mieweb/ui`.**
 - **Pull-to-refresh can't hang.** Every request has a timeout, and the spinner always stops within 6 seconds.
+
+## Checking the never-hang promise
+
+Each pull to refresh and Retry logs how long it took. In Console.app, filter on subsystem `HuddleNative`, category `Refresh`:
+
+```
+Now refresh returned after 5.5 s
+```
+
+Settings › Diagnostics lists the last 50 requests with status and timing.
+
+## Known gaps
+
+What v1 leaves out or hasn't proven yet:
+
+- **Not in v1 by design:**
+  - remote push (needs the backend's `APNS_BUNDLE_ID`)
+  - attachment and Pulse uploads
+  - likes and comments
+  - Redmine
+  - OAuth, PAT and dev login
+  - admin, org and enterprise screens
+  - server-side logout
+  - timesheet change requests
+- **Editing posts:** Huddle posts can be created, not edited or deleted.
+- **Switching servers:** sign out first; there's no in-place switch.
+- **Development and Production servers:** hidden until `HN_DEV_SERVER_URL` / `HN_PROD_SERVER_URL` are set in `Local.xcconfig`.
+- **Plan teams outside the app:**
+  - Start day refuses for teams that require a plan, since the plan is written in the app. The backend only enforces the rule at clock-out.
+  - The Control Center toggle can't open the app, so it posts a notification.
+- **Lists in the composer:** one level only (no nested items), and numbered lists always count from 1.
+- **Mentions:**
+  - A teammate whose first name another teammate shares can't be mentioned. The web app has the same rule.
+  - A ticket is mentioned by its title, which doesn't link back to the ticket.
+- **Week bars:** they count ticket-timer time, like the web app's Work page, not shift time.
+- **Checked in the Simulator only:**
+  - device runs
+  - VoiceOver navigation done by ear
+  - a full 5-minute background cycle
+  - airplane mode on hardware
+
+  The Simulator checks: a frozen backend (process stopped), a stopped backend, cold launch and resume, and the largest text size.
+

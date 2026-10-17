@@ -211,4 +211,22 @@ struct ResourceTests {
         #expect(fetch.calls == 2)
         #expect(resource.value == ["fresh"])
     }
+
+    @Test("The cached copy can be shown before any fetch starts")
+    func showCachedFirst() async {
+        let store = MemorySnapshotStore()
+        store.save(["cached"], key: "k")
+        let fetch = ControlledFetch(gated: true, results: [.success(["fresh"])])
+        let resource = Resource<[String]>(cacheKey: "k", store: store) { try await fetch() }
+        #expect(resource.showCached())
+        #expect(resource.value == ["cached"])
+        #expect(fetch.calls == 0)
+        #expect(Resource<[String]>(cacheKey: "none", store: store) { [] }.showCached() == false)
+    }
+
+    @Test("The default wait leaves room under the 6-second promise")
+    func defaultWait() {
+        #expect(Resource<[String]>.maxWait < .seconds(6))
+        #expect(Resource<[String]>.maxWait >= .seconds(5))
+    }
 }

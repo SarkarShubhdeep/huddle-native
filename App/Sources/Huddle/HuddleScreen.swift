@@ -24,7 +24,7 @@ struct HuddleScreen: View {
             .plainRow()
 
             if let feed, feed.error != nil, feed.value != nil {
-                RefreshBanner(message: "Couldn’t refresh the feed.") { Task { await feed.refresh() } }
+                RefreshBanner(message: "Couldn’t refresh the feed.") { await timedRefresh("Huddle") { await feed.refresh() } }
                     .padding(.horizontal, Spacing.margin)
                     .plainRow()
             }
@@ -52,7 +52,7 @@ struct HuddleScreen: View {
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
         .background(Palette.canvas)
-        .refreshable { await feed?.refresh() }
+        .refreshable { await timedRefresh("Huddle") { await feed?.refresh() } }
         .overlay { overlay }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
