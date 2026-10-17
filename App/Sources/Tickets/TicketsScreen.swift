@@ -60,7 +60,7 @@ struct TicketsScreen: View {
             }
         }
         .sheet(item: $planTicket) { ticket in
-            PlanSheet(teamName: app.team?.name ?? "Your team", initialText: "Working on \(ticket.title).") { plan in
+            PlanSheet(teamName: app.team?.name ?? "Your team", ticket: ticket) { plan in
                 guard let teamId = app.team?.id else { return false }
                 return await now.startDay(teamId: teamId, plan: plan, ticketId: ticket.id)
             }

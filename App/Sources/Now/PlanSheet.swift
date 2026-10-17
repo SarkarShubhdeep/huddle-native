@@ -1,22 +1,35 @@
+import HuddleKit
 import SwiftUI
 
 /// "What's the plan today?" One sheet posts the plan to Huddle and clocks you
-/// in with it linked to the new shift. The rich editor arrives in Step 8;
-/// until then the plan is plain text (markdown is kept as typed).
+/// in with it linked to the new shift.
 struct PlanSheet: View {
     let teamName: String
-    /// Text to start from, e.g. the ticket you're about to time.
-    var initialText = ""
+    /// The ticket you're about to time, written in as a mention.
+    var ticket: Ticket?
     /// Posts the plan and starts the day; returns whether it worked.
-    var start: (String) async -> Bool
+    var start: (ComposedText) async -> Bool
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(AppModel.self) private var app
     @Environment(NowModel.self) private var now
-    @State private var text = ""
+    @State private var controller: RichEditorController
+    @State private var directory: MentionDirectory?
     @State private var isStarting = false
-    @FocusState private var focused: Bool
 
-    private var canStart: Bool { !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isStarting }
+    init(teamName: String, ticket: Ticket? = nil, start: @escaping (ComposedText) async -> Bool) {
+        self.teamName = teamName
+        self.ticket = ticket
+        self.start = start
+        let initial = ticket.map { ticket in
+            RichDocument([RichBlock(.paragraph, [
+                RichRun("Working on "), RichRun(ticket.title, mention: .ticket(ticketId: ticket.id)), RichRun("."),
+            ])])
+        } ?? RichDocument([RichBlock(.paragraph, [])])
+        _controller = State(initialValue: RichEditorController(initial))
+    }
+
+    private var canStart: Bool { !controller.isEmpty && !isStarting }
 
     var body: some View {
         NavigationStack {
@@ -31,19 +44,17 @@ struct PlanSheet: View {
                         .foregroundStyle(Palette.textSecondary)
                 }
                 Hairline()
-                ComposerField(text: $text, placeholder: "A few lines on what you’ll work on…")
-                    .focused($focused)
                 if let error = now.actionError {
                     InlineError(message: error)
                 }
-                Spacer(minLength: 0)
+                Composer(controller: controller, directory: directory, placeholder: "A few lines on what you’ll work on…")
                 Text("Start day posts this plan and clocks you in.")
                     .font(.footnote)
                     .foregroundStyle(Palette.textSecondary)
                     .frame(maxWidth: .infinity)
             }
             .padding(.horizontal, Spacing.xl)
-            .padding(.bottom, Spacing.l)
+            .padding(.bottom, Spacing.s)
             .background(Palette.canvas)
             .navigationTitle("Plan")
             .navigationBarTitleDisplayMode(.inline)
@@ -63,9 +74,10 @@ struct PlanSheet: View {
         .presentationDragIndicator(.visible)
         .interactiveDismissDisabled(isStarting)
         .onAppear {
-            if text.isEmpty { text = initialText }
-            focused = true
             now.actionError = nil
+            if directory == nil, let api = app.api, let teamId = app.team?.id {
+                directory = MentionDirectory(api: api, teamId: teamId, snapshots: app.snapshotStore)
+            }
         }
     }
 
@@ -73,35 +85,8 @@ struct PlanSheet: View {
         guard canStart else { return }
         isStarting = true
         Task {
-            if await start(text) { dismiss() }
+            if await start(controller.composed) { dismiss() }
             isStarting = false
         }
-    }
-}
-
-/// A multi-line text area on the canvas, with a placeholder. Stands in for
-/// the rich composer until Step 8.
-struct ComposerField: View {
-    @Binding var text: String
-    let placeholder: String
-
-    var body: some View {
-        TextEditor(text: $text)
-            .font(.body)
-            .foregroundStyle(Palette.textPrimary)
-            .scrollContentBackground(.hidden)
-            .frame(minHeight: 140)
-            .overlay(alignment: .topLeading) {
-                if text.isEmpty {
-                    Text(placeholder)
-                        .font(.body)
-                        .foregroundStyle(Palette.textSecondary.opacity(0.6))
-                        .padding(.top, 8)
-                        .padding(.leading, 5)
-                        .allowsHitTesting(false)
-                        .accessibilityHidden(true)
-                }
-            }
-            .accessibilityLabel(placeholder)
     }
 }

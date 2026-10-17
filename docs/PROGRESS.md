@@ -161,8 +161,26 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
 - [ ] **You:** check the totals against the web app.
 
 ### Step 8: Huddle
-- [ ] Feed (`huddle.getPosts`): edge-to-edge posts with plan and wrap-up badges, images, ticket chips.
-- [ ] Rich composer: formatting, checklists, and @ people and tickets, converted to and from markdown, with round-trip tests.
+- [x] Feed (`huddle.getPosts`): edge-to-edge posts with plan and wrap-up badges, images, ticket chips.
+  - Team / Mine, pull to refresh, a 30 s refresh while the tab is open, and a cache per team.
+  - Post bodies render paragraphs, bullets, numbers and checklists (done items struck through), bold/italic/strike, @mentions and links in lime. Images written into the text and image attachments show, re-based onto the current server.
+  - The canvas's like and comment counts show; likes and comments themselves are not in v1.
+- [x] Rich composer: formatting, checklists, and @ people and tickets, converted to and from markdown, with round-trip tests.
+  - `RichDocument` and `RichMarkdown` (HuddleKit, 11 tests) cover:
+    - GitHub markdown: `**`, `*`, `~~`, `- `, `1. `, `- [ ]` / `- [x]`
+    - escaping, links (the backend's activity posts use them), and dropping trailing spaces
+    - `@Firstname` mention tokens, matched the way the web app matches them (shared first names stay plain)
+  - The editor is a `UITextView` bridge:
+    - The toolbar toggles styles on the selection or for what you type next.
+    - Lists continue on Return and end on an empty item. Numbers renumber, and a tap on a checkbox ticks it.
+    - `@` opens one popover of teammates and open tickets.
+    - People go to `content.mentions`; the first ticket becomes `ticketId` and is written as its title.
+  - New post, plan and wrap-up all use it. The plan opened from "Start day & timer" starts with the ticket as a mention, and the wrap-up starts from today's tickets.
+- [x] Checked against the local backend: a post with bold text, a ticked and an open checklist item, a person mention and a ticket mention was saved as the expected markdown, with Rachel in `mentions` and the ticket as `ticketId`. The feed then showed it with the checklist, mention and ticket chip.
+  - Fixed along the way:
+    - an infinite loop in list paragraph styling
+    - keystrokes dropped because typing attributes were reset on every key
+    - list text inheriting the marker's gray
 - [ ] **You:** post from the app and see the post in the web app.
 
 ### Step 9: Inbox and Settings

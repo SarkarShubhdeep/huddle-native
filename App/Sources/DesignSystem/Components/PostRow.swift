@@ -14,17 +14,15 @@ struct PostRow: View {
     let markdown: String
     var ticketTitle: String?
     var imageURL: URL?
+    /// Lowercase first name → user id, so @mentions in the text show as mentions.
+    var people: [String: String] = [:]
     var likeCount = 0
     var commentCount = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             header
-            Text(rendered)
-                .font(.body)
-                .foregroundStyle(Palette.textPrimary)
-                .tint(Palette.limeText)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            PostBody(markdown: markdown, people: people)
             if let ticketTitle {
                 Label(ticketTitle, systemImage: "list.bullet")
                     .font(.footnote.weight(.semibold))
@@ -35,7 +33,7 @@ struct PostRow: View {
                     .accessibilityLabel("Ticket: \(ticketTitle)")
             }
             if let imageURL {
-                image(imageURL)
+                PostImage(url: imageURL)
             }
             if likeCount > 0 || commentCount > 0 {
                 HStack(spacing: 18) {
@@ -70,8 +68,99 @@ struct PostRow: View {
         }
         .accessibilityElement(children: .combine)
     }
+}
 
-    private func image(_ url: URL) -> some View {
+/// A post's markdown as styled lines: paragraphs, bullets, numbers and
+/// checklists, with bold, italic, strikethrough and @mentions, plus any
+/// images written into the text.
+struct PostBody: View {
+    let markdown: String
+    var people: [String: String] = [:]
+
+    var body: some View {
+        let (text, images) = Self.splitImages(markdown)
+        let document = RichMarkdown.document(from: text, people: people)
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            ForEach(Array(document.blocks.enumerated()), id: \.offset) { index, block in
+                line(block, number: number(at: index, in: document))
+            }
+            ForEach(images, id: \.self) { url in
+                PostImage(url: url)
+            }
+        }
+        .font(.body)
+        .foregroundStyle(Palette.textPrimary)
+        .tint(Palette.limeText)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    @ViewBuilder private func line(_ block: RichBlock, number: Int) -> some View {
+        let text = Text(attributed(block.runs))
+        switch block.kind {
+        case .paragraph:
+            if block.plainText.isEmpty { Color.clear.frame(height: 4) } else { text }
+        case .bullet:
+            marker(Text("•").foregroundStyle(Palette.textSecondary), text)
+        case .numbered:
+            marker(Text("\(number).").monospacedDigit().foregroundStyle(Palette.textSecondary), text)
+        case let .checklist(done):
+            marker(Image(systemName: done ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(done ? Palette.limeText : Palette.textSecondary)
+                    .accessibilityLabel(done ? "Done" : "To do"),
+                   done ? text.strikethrough().foregroundStyle(Palette.textSecondary) : text)
+        }
+    }
+
+    private func marker(_ marker: some View, _ text: some View) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: Spacing.s) {
+            marker.frame(minWidth: 18, alignment: .leading)
+            text
+        }
+    }
+
+    private func number(at index: Int, in document: RichDocument) -> Int {
+        var n = 0
+        for i in stride(from: index, through: 0, by: -1) {
+            guard document.blocks[i].kind == .numbered else { break }
+            n += 1
+        }
+        return n
+    }
+
+    private func attributed(_ runs: [RichRun]) -> AttributedString {
+        var out = AttributedString()
+        for run in runs {
+            var piece = AttributedString(run.text)
+            var font = Font.body
+            if run.bold || run.mention != nil { font = font.weight(.semibold) }
+            if run.italic { font = font.italic() }
+            piece.font = font
+            if run.strike { piece.strikethroughStyle = .single }
+            if run.mention != nil || run.link != nil { piece.foregroundColor = Palette.limeText }
+            // Full URLs open; the web app's own paths (/app/...) mean nothing here.
+            if let link = run.link, link.hasPrefix("http"), let url = URL(string: link) { piece.link = url }
+            out += piece
+        }
+        return out
+    }
+
+    /// Pulls `![alt](url)` images out of the text.
+    static func splitImages(_ markdown: String) -> (String, [URL]) {
+        let pattern = /!\[[^\]]*\]\(([^)\s]+)\)/
+        var urls: [URL] = []
+        for match in markdown.matches(of: pattern) {
+            if let url = URL(string: String(match.output.1)) { urls.append(url) }
+        }
+        let text = markdown.replacing(pattern, with: "").trimmingCharacters(in: .whitespacesAndNewlines)
+        return (text, urls)
+    }
+}
+
+/// An image in a post: fills the width at a fixed height, rounded.
+struct PostImage: View {
+    let url: URL
+
+    var body: some View {
         AsyncImage(url: url) { phase in
             if let image = phase.image {
                 image.resizable().scaledToFill()
@@ -79,6 +168,8 @@ struct PostRow: View {
                 Palette.fill.overlay {
                     if phase.error != nil {
                         Image(systemName: "photo").foregroundStyle(Palette.textSecondary)
+                    } else {
+                        ProgressView()
                     }
                 }
             }
@@ -87,13 +178,6 @@ struct PostRow: View {
         .frame(maxWidth: .infinity)
         .clipShape(RoundedRectangle(cornerRadius: Radius.tile))
         .accessibilityLabel("Image attachment")
-    }
-
-    /// Inline markdown (bold, italic, strikethrough, links). Lists and
-    /// checklists get their full rendering with the composer in Step 8.
-    private var rendered: AttributedString {
-        (try? AttributedString(markdown: markdown, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)))
-            ?? AttributedString(markdown)
     }
 }
 

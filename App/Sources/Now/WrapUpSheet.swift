@@ -10,7 +10,9 @@ struct WrapUpSheet: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(NowModel.self) private var now
-    @State private var note = ""
+    @Environment(AppModel.self) private var app
+    @State private var controller: RichEditorController?
+    @State private var directory: MentionDirectory?
     @State private var plan: HuddlePost?
     @State private var loadedPlan = false
     @State private var ending: Bool?
@@ -31,9 +33,11 @@ struct WrapUpSheet: View {
                     }
                     VStack(alignment: .leading, spacing: Spacing.xs) {
                         Text("Wrap-up").font(.footnote).foregroundStyle(Palette.textSecondary)
-                        ComposerField(text: $note, placeholder: "What got done, what’s next…")
-                            .padding(.horizontal, Spacing.s)
-                            .background(Palette.surface, in: RoundedRectangle(cornerRadius: Radius.card))
+                        if let controller {
+                            Composer(controller: controller, directory: directory,
+                                     placeholder: "What got done, what’s next…", autofocus: false)
+                                .frame(height: 280)
+                        }
                     }
                     if let error = now.actionError {
                         InlineError(message: error)
@@ -56,7 +60,10 @@ struct WrapUpSheet: View {
         .interactiveDismissDisabled(ending != nil)
         .task {
             now.actionError = nil
-            if note.isEmpty { note = suggestedNote }
+            if controller == nil { controller = RichEditorController(suggestedNote) }
+            if directory == nil, let api = app.api, let teamId = now.active?.teamId {
+                directory = MentionDirectory(api: api, teamId: teamId, snapshots: app.snapshotStore)
+            }
             plan = await now.sessionPost()
             loadedPlan = true
         }
@@ -87,7 +94,7 @@ struct WrapUpSheet: View {
                 if ending == true { ProgressView().tint(Palette.onLime) } else { Text("Post wrap-up & end day") }
             }
             .buttonStyle(.primaryLarge)
-            .disabled(note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || ending != nil || !loadedPlan)
+            .disabled(controller?.isEmpty ?? true || ending != nil || !loadedPlan)
             if !requiresWrapUp {
                 Button { end(withNote: false) } label: {
                     if ending == false { ProgressView() } else { Text("End day without posting") }
@@ -106,17 +113,23 @@ struct WrapUpSheet: View {
     private func end(withNote: Bool) {
         ending = withNote
         Task {
-            if await now.endDay(note: withNote ? note : nil, plan: plan) { dismiss() }
+            if await now.endDay(note: withNote ? controller?.composed : nil, plan: plan) { dismiss() }
             ending = nil
         }
     }
 
-    /// Today's tickets with their times, as a starting point.
-    private var suggestedNote: String {
+    /// Today's tickets with their times, as a starting point, each one a ticket mention.
+    private var suggestedNote: RichDocument {
         let worked = now.entries.filter { $0.totalSeconds(at: .now) >= 60 }
-        guard !worked.isEmpty else { return "" }
-        return "Worked on " + worked.map { "\($0.entry.displayTitle ?? "a ticket") (\(hoursMinutes($0.totalSeconds(at: .now))))" }
-            .joined(separator: ", ") + "."
+        guard !worked.isEmpty else { return RichDocument([RichBlock(.paragraph, [])]) }
+        var runs = [RichRun("Worked on ")]
+        for (index, entry) in worked.enumerated() {
+            if index > 0 { runs.append(RichRun(index == worked.count - 1 ? " and " : ", ")) }
+            runs.append(RichRun(entry.entry.displayTitle ?? "a ticket", mention: .ticket(ticketId: entry.entry.ticketId)))
+            runs.append(RichRun(" (\(hoursMinutes(entry.totalSeconds(at: .now))))"))
+        }
+        runs.append(RichRun("."))
+        return RichDocument([RichBlock(.paragraph, runs)])
     }
 
     private var rangeLine: String {

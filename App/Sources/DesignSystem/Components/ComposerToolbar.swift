@@ -51,6 +51,7 @@ struct ComposerToolbar: View {
                     .frame(maxWidth: .infinity, minHeight: 44)
                     .contentShape(Rectangle())
                     .buttonStyle(.plain)
+                    .focusable(false)
                     .accessibilityAddTraits(isOn ? .isSelected : [])
                     .springAnimation(value: isOn)
             }

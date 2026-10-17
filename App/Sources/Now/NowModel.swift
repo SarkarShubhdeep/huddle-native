@@ -119,13 +119,14 @@ final class NowModel {
 
     /// Clocks in to `teamId`, after posting `plan` when the team asks for one,
     /// and with `ticketId`, starts that ticket's timer too ("Start day & timer").
-    func startDay(teamId: String, plan: String?, ticketId: String? = nil) async -> Bool {
+    func startDay(teamId: String, plan: ComposedText?, ticketId: String? = nil) async -> Bool {
         await perform(.startDay) {
             var planPostId: String?
-            if let plan, !plan.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            if let plan, !plan.isEmpty {
                 planPostId = try await self.huddle.create(.init(
                     teamId: teamId,
-                    content: .init(text: plan.trimmingCharacters(in: .whitespacesAndNewlines)),
+                    content: .init(text: plan.markdown, mentions: plan.mentions),
+                    ticketId: plan.ticketId ?? ticketId,
                     postDate: self.workDay.key(for: .now)
                 ))
             }
@@ -191,18 +192,19 @@ final class NowModel {
 
     /// Posts the wrap-up (onto the plan when there is one), then clocks out.
     /// With no note, just clocks out. Returns whether the day ended.
-    func endDay(note: String?, plan: HuddlePost?) async -> Bool {
+    func endDay(note: ComposedText?, plan: HuddlePost?) async -> Bool {
         guard let active else { return false }
         return await perform(.endDay) {
-            if let note, !note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                let text = WrapUpText.compose(plan: plan?.content.text, note: note)
+            if let note, !note.isEmpty {
+                let text = WrapUpText.compose(plan: plan?.content.text, note: note.markdown)
                 if let plan {
-                    _ = try await self.huddle.update(postId: plan.id, content: .init(text: text, mentions: plan.content.mentions), wrapUp: true)
+                    let mentions = Array(NSOrderedSet(array: plan.content.mentions + note.mentions)) as? [String] ?? note.mentions
+                    _ = try await self.huddle.update(postId: plan.id, content: .init(text: text, mentions: mentions), wrapUp: true)
                 } else {
                     _ = try await self.huddle.create(.init(
-                        teamId: active.teamId, content: .init(text: text),
+                        teamId: active.teamId, content: .init(text: text, mentions: note.mentions), ticketId: note.ticketId,
                         postDate: self.workDay.key(for: active.startTime), clockEventId: active.id, wrapUp: true
-                    ) as HuddleService.NewPost)
+                    ))
                 }
             }
             let event = try await self.clock.stop(teamId: active.teamId)

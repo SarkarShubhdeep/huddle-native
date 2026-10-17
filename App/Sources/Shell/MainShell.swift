@@ -75,6 +75,8 @@ private struct TabRoot: View {
             NowScreen(onShowTimesheet: onShowTimesheet)
         } else if tab == .tickets, model.team != nil {
             TicketsScreen()
+        } else if tab == .huddle, model.team != nil {
+            HuddleScreen()
         } else if tab == .time, model.team != nil {
             TimesheetScreen()
         } else {
