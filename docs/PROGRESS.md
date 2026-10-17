@@ -21,12 +21,12 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
 - [ ] **You:** run `brew install xcodegen && xcodegen`, open the project in Xcode, and confirm the empty app builds and runs on a device.
 
 ### Step 2: HuddleKit core
-- [ ] `APIClient` actor:
-  - [ ] timeouts
-  - [ ] `query` vs `mutate`
-  - [ ] a single retry on transient errors
-  - [ ] envelope decoding
-  - [ ] `APIError`
+- [x] `APIClient` (a `Sendable` struct over an injectable `HTTPTransport`):
+  - [x] timeouts
+  - [x] `query` vs `mutate`
+  - [x] a single retry on transient errors
+  - [x] envelope decoding
+  - [x] `APIError`
 - [ ] `MeteorLogin`: a one-shot WebSocket connect → login → close, capped at 10 s, sending the SHA-256 digest plus `raw`.
 - [ ] `Keychain` + `SessionStore`: save, restore, and sign out on `unauthorized`.
 - [ ] Models:
