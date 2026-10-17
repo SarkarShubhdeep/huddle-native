@@ -68,9 +68,9 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
   - `RefreshBanner` and `StatusView` (empty, unreachable, offline).
 - [x] Signature components:
   - [x] the glass dock with the timer strip
-    - `AppDock` is the native iOS 26 `TabView` (Liquid Glass tab bar, minimizes on scroll) with `TimerStrip` as its `tabViewBottomAccessory`. The strip has three states (timing, on shift, on break), is hidden off the clock, and shows just the times when the bar is minimized.
-    - The system draws the strip and the tab bar as two stacked glass capsules rather than one merged shape.
-    - Hiding the strip uses `tabViewBottomAccessory(isEnabled:)` on iOS 26.1+; on 26.0 the accessory is added or removed instead.
+    - `AppDock` is one custom Liquid Glass shape, as on the canvas: `TimerStrip` on top (timing, on shift, on break; hidden off the clock), a hairline, then the five tabs with a lime selection pill and an Inbox badge.
+    - Tabs still live in a `TabView` with the system tab bar hidden, so each tab keeps its own navigation and scroll state. The dock sits in the bottom safe area and content scrolls under it. It doesn't minimize on scroll.
+    - Solid under Reduce Transparency; the strip stops growing at xLarge text and offers the large content viewer, like system bars.
   - [x] filter and sort pills: `FilterPill` (native glass menu), `MultiSelectPill` (stays open while you tick), `SortPill` (field, then direction), `FilterCountPill`, `PillBar`
   - [x] the Now hero: `NowHero` in all four states (tiles fall back to a list at large text sizes) and `TicketTimerCard`
   - [x] the ticket row
@@ -79,7 +79,7 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
   - [x] the rich composer toolbar: `ComposerToolbar` on control glass (bold, italic, strikethrough, bullets, numbers, checklist, @). The editor itself is Step 8.
   - [x] `SectionHeader`, which moves its detail under the title at accessibility text sizes
 - [x] A `#Preview` for each, in light and dark.
-- [x] Simulator check (iPhone 17 Pro, iOS 26.5) against the canvas boards: every gallery tab in light and dark, the minimized dock, the largest accessibility text size, and Reduce Transparency.
+- [x] Simulator check (iPhone 17 Pro, iOS 26.5) against the canvas boards: every gallery tab in light and dark, tab switching, the largest accessibility text size, and Reduce Transparency.
   - Run the gallery with `-tab now|tickets|huddle|time|inbox`, `-demo off|timing|shift|break|ended` and `-showcase <id>`.
   - Light-mode controls on the canvas background use the gray `Fill` token, because the raised-surface color is the same as the canvas.
 - [ ] **You:** compare the previews with the design canvas.

@@ -37,9 +37,12 @@ enum TimerStripState: Equatable, Sendable {
     case onBreak(breakSeconds: Int, pausedTicketTitle: String?, ticketSeconds: Int?)
 }
 
-/// The app's one glass dock: the system Liquid Glass tab bar with the timer
-/// strip as its bottom accessory. The tab bar minimizes on scroll, and the
-/// strip then moves inline beside it.
+/// The app's one glass dock, as on the canvas: a single Liquid Glass shape
+/// holding the timer strip on top (while on the clock) and the five tabs below.
+///
+/// Tabs still live in a `TabView`, so each keeps its own navigation and scroll
+/// state; only the system tab bar is hidden. The dock sits in the bottom safe
+/// area, so scroll views inset their content and scroll under the glass.
 struct AppDock<Content: View>: View {
     @Binding var selection: AppTab
     var strip: TimerStripState?
@@ -52,60 +55,122 @@ struct AppDock<Content: View>: View {
             ForEach(AppTab.allCases) { tab in
                 Tab(tab.title, systemImage: tab.systemImage, value: tab) {
                     content(tab)
+                        .toolbar(.hidden, for: .tabBar)
                 }
-                .badge(tab == .inbox ? inboxBadge : 0)
             }
         }
         .tint(Palette.limeText)
-        .tabBarMinimizeBehavior(.onScrollDown)
-        .modifier(TimerAccessory(state: strip, action: onStripAction))
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            Dock(selection: $selection, strip: strip, inboxBadge: inboxBadge, onStripAction: onStripAction)
+                .padding(.horizontal, Spacing.m)
+                .padding(.bottom, Spacing.xs)
+        }
     }
 }
 
-/// Adds the timer strip as the tab view's bottom accessory, or none when off the clock.
-private struct TimerAccessory: ViewModifier {
-    let state: TimerStripState?
+/// The glass shape itself: strip, hairline, tabs.
+struct Dock: View {
+    @Binding var selection: AppTab
+    var strip: TimerStripState?
+    var inboxBadge = 0
+    var onStripAction: () -> Void = {}
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        VStack(spacing: 0) {
+            if let strip {
+                TimerStrip(state: strip, action: onStripAction)
+                    .frame(minHeight: 58)
+                Hairline().padding(.horizontal, 18)
+                    .transition(.opacity)
+            }
+            HStack(spacing: 0) {
+                ForEach(AppTab.allCases) { tab in
+                    DockTabButton(tab: tab, isSelected: selection == tab, badge: tab == .inbox ? inboxBadge : 0) {
+                        selection = tab
+                    }
+                }
+            }
+            .padding(.horizontal, 6)
+            .frame(height: 62)
+        }
+        .controlGlass(in: RoundedRectangle(cornerRadius: 32))
+        .shadow(color: .black.opacity(0.12), radius: 15, y: 10)
+        .animation(Motion.spring(reduceMotion: reduceMotion), value: strip == nil)
+        .animation(Motion.spring(reduceMotion: reduceMotion), value: selection)
+    }
+}
+
+private struct DockTabButton: View {
+    let tab: AppTab
+    let isSelected: Bool
+    var badge = 0
     let action: () -> Void
 
-    func body(content: Content) -> some View {
-        if #available(iOS 26.1, *) {
-            content.tabViewBottomAccessory(isEnabled: state != nil) {
-                if let state { TimerStrip(state: state, action: action) }
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 3) {
+                Image(systemName: tab.systemImage)
+                    .symbolVariant(isSelected ? .fill : .none)
+                    .font(.system(size: 20, weight: .semibold))
+                    .frame(height: 24)
+                    .overlay(alignment: .topTrailing) {
+                        if badge > 0 {
+                            Text(badge > 99 ? "99+" : "\(badge)")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 5)
+                                .frame(minWidth: 18, minHeight: 18)
+                                .background(Palette.destructive, in: Capsule())
+                                .offset(x: 10, y: -6)
+                        }
+                    }
+                Text(tab.title)
+                    .font(.system(size: 10, weight: .semibold))
             }
-        } else if let state {
-            content.tabViewBottomAccessory { TimerStrip(state: state, action: action) }
-        } else {
-            content
+            .foregroundStyle(isSelected ? Palette.limeText : Palette.textSecondary)
+            .frame(maxWidth: 66, minHeight: 50)
+            .frame(maxWidth: .infinity)
+            .background {
+                if isSelected {
+                    Capsule().fill(Palette.limeSoft).frame(maxWidth: 66)
+                }
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(tab.title)
+        .accessibilityValue(badge > 0 ? (badge == 1 ? "1 unread" : "\(badge) unread") : "")
+        .accessibilityAddTraits(isSelected ? [.isSelected, .isButton] : .isButton)
+        .accessibilityShowsLargeContentViewer {
+            Label(tab.title, systemImage: tab.systemImage)
         }
     }
 }
 
 /// The dock's top row while on the clock: the shift total, the ticket and its
-/// time, and one action. Inline (tab bar minimized) it shows just the times.
+/// time, and one action.
 struct TimerStrip: View {
     let state: TimerStripState
     var action: () -> Void = {}
 
-    @Environment(\.tabViewBottomAccessoryPlacement) private var placement
-
     var body: some View {
         HStack(spacing: Spacing.m) {
-            if placement == .inline {
-                inlineContent
-            } else {
-                shiftColumn
-                Rectangle()
-                    .fill(Palette.hairline)
-                    .frame(width: 1, height: 28)
-                    .accessibilityHidden(true)
-                ticketColumn
-            }
+            shiftColumn
+            Rectangle()
+                .fill(Palette.hairline)
+                .frame(width: 1, height: 32)
+                .accessibilityHidden(true)
+            ticketColumn
             Button(actionLabel, systemImage: actionIcon, action: action)
                 .labelStyle(.iconOnly)
-                .buttonStyle(HNIconButtonStyle(role: actionIsPrimary ? .primary : .secondary, diameter: 36))
+                .buttonStyle(HNIconButtonStyle(role: actionIsPrimary ? .primary : .secondary))
         }
-        .padding(.leading, Spacing.l)
+        .padding(.leading, 18)
         .padding(.trailing, Spacing.xs)
+        // Like system bars, the strip stops growing at xLarge; long-press shows it enlarged.
+        .dynamicTypeSize(...DynamicTypeSize.xLarge)
         .springAnimation(value: state)
     }
 
@@ -127,6 +192,9 @@ struct TimerStrip: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(shiftLabel)
         .accessibilityValue(ShiftClockFormat.spoken(shiftSeconds))
+        .accessibilityShowsLargeContentViewer {
+            Text("\(shiftLabel) \(ShiftClockFormat.clock(shiftSeconds))")
+        }
     }
 
     private var ticketColumn: some View {
@@ -136,32 +204,16 @@ struct TimerStrip: View {
                 .foregroundStyle(Palette.textSecondary)
                 .lineLimit(1)
             Text(ticketLine)
-                .font(Typography.time(.subheadline))
+                .font(Typography.time(.callout))
                 .foregroundStyle(ticketColor)
                 .lineLimit(1)
                 .contentTransition(.numericText())
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
-    }
-
-    private var inlineContent: some View {
-        HStack(spacing: Spacing.s) {
-            Circle().fill(shiftColor).frame(width: 6, height: 6).accessibilityHidden(true)
-            Text(ShiftClockFormat.clock(shiftSeconds))
-                .font(Typography.time(.subheadline))
-                .foregroundStyle(Palette.textPrimary)
-            if let ticketSeconds {
-                Text(ShiftClockFormat.clock(ticketSeconds))
-                    .font(Typography.time(.subheadline))
-                    .foregroundStyle(ticketColor)
-            }
+        .accessibilityShowsLargeContentViewer {
+            Text("\(ticketCaption) \(ticketLine)")
         }
-        .contentTransition(.numericText())
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(shiftLabel)
-        .accessibilityValue(ShiftClockFormat.spoken(shiftSeconds))
     }
 
     // MARK: State → content
