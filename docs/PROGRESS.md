@@ -20,7 +20,7 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
 - [x] Push to https://github.com/SarkarShubhdeep/huddle-native.
 - [ ] **You:** run `brew install xcodegen && xcodegen`, open the project in Xcode, and confirm the empty app builds and runs on a device.
 
-### Step 2: HuddleKit core
+### Step 2: HuddleKit core ✅
 - [x] `APIClient` (a `Sendable` struct over an injectable `HTTPTransport`):
   - [x] timeouts
   - [x] `query` vs `mutate`
@@ -40,19 +40,21 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
   - [x] Timesheet
   - [x] media-URL re-basing
 - [x] Services: Clock (with timesheet), Timers, Tickets, Huddle, Notifications, Users, Teams.
-- [ ] `Resource<T>` refresh engine:
-  - [ ] single-flight
-  - [ ] a detached fetch
-  - [ ] the 6 s cap
-  - [ ] keeps stale data
-  - [ ] SwiftData cache
-- [ ] Shift-time calculator that mirrors the web app's `getActiveClockSeconds`.
-- [ ] Swift Testing tests:
-  - [ ] envelope and null handling
-  - [ ] error mapping
-  - [ ] media re-basing
-  - [ ] Resource single-flight and the 6 s cap
-  - [ ] shift-time math, including the 20-minute meal rule
+- [x] `Resource<T>` refresh engine:
+  - [x] single-flight
+  - [x] a detached fetch
+  - [x] the 6 s cap
+  - [x] keeps stale data
+  - [x] snapshot cache (JSON files in Caches; portable, so it runs in tests)
+- [x] Shift-time calculator (`ShiftClock`) that mirrors the web app's `getActiveClockSeconds`, plus the meal-break countdown.
+- [x] Swift Testing tests:
+  - [x] envelope and null handling
+  - [x] error mapping
+  - [x] media re-basing
+  - [x] Resource single-flight and the 6 s cap
+  - [x] shift-time math, including the 20-minute meal rule
+- [x] `swift test`: 72 tests pass on Swift 6.2 (Linux), with no warnings under strict concurrency.
+- [ ] **You:** run `swift test` in `Packages/HuddleKit` on your Mac (or ⌘U in Xcode).
 
 ### Step 3: Design system in code
 - [ ] Tokens from DESIGN.md: color sets in light and dark, type, spacing, radius, motion.

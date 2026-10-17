@@ -24,6 +24,8 @@ Huddle Native is an experimental native iOS app in SwiftUI. It talks to the **ex
     - Liquid Glass on controls only
 - **Step 1 (repo skeleton): pushed** to https://github.com/SarkarShubhdeep/huddle-native.
   - HuddleKit tests: 7 of 7 pass on Swift 6.2 (Linux).
+- **Step 2 (HuddleKit core): done.** APIClient, one-shot login, Keychain session, models, services, the never-hang `Resource<T>` and `ShiftClock`, with 72 tests passing.
+  - The cache is JSON snapshots, not SwiftData: it's portable and enough for stale-while-revalidate.
 - **Waiting on you:** run `xcodegen` on your Mac and confirm the app builds and runs on a device. That's the last box of Step 1.
 
 ## Guidelines (apply to every step)
@@ -67,7 +69,7 @@ Huddle Native is an experimental native iOS app in SwiftUI. It talks to the **ex
 - iOS 26 minimum, Swift 6 with strict concurrency, SwiftUI with `@Observable`.
 - XcodeGen `project.yml`. The `.xcodeproj` is never committed.
 - `HuddleKit` local package for everything that isn't UI: no third-party dependencies, builds on macOS and Linux.
-- SwiftData for the cache, Swift Testing for tests.
+- A JSON snapshot cache (portable; SwiftData only if we ever need queries), Swift Testing for tests.
 - App Intents, ActivityKit and WidgetKit for system integration.
 
 **Working agreement**
@@ -83,7 +85,7 @@ Huddle Native is an experimental native iOS app in SwiftUI. It talks to the **ex
 
 0. ✅ **Design review.**
 1. 🟡 **Repo skeleton.** Pushed. Waiting on your first Xcode build.
-2. **HuddleKit core:**
+2. ✅ **HuddleKit core:**
    - APIClient
    - MeteorLogin
    - Keychain / SessionStore
