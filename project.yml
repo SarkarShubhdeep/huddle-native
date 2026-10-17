@@ -1,0 +1,108 @@
+# XcodeGen spec. Run `xcodegen` in this folder to (re)generate HuddleNative.xcodeproj.
+# The generated project is not committed; this file is the source of truth.
+name: HuddleNative
+
+options:
+  bundleIdPrefix: com.sarkarshubhdeep
+  deploymentTarget:
+    iOS: "26.0"
+  xcodeVersion: "26.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+configFiles:
+  Debug: Config/Base.xcconfig
+  Release: Config/Base.xcconfig
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    CODE_SIGN_STYLE: Automatic
+    TARGETED_DEVICE_FAMILY: "1"
+
+packages:
+  HuddleKit:
+    path: Packages/HuddleKit
+
+targets:
+  HuddleNative:
+    type: application
+    platform: iOS
+    sources:
+      - App/Sources
+      - App/Resources
+    dependencies:
+      - package: HuddleKit
+      - target: HuddleWidgets
+    entitlements:
+      path: App/HuddleNative.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - $(APP_GROUP_ID)
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: Huddle
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        # Plain http:// to a LAN address (the local backend) without opening up arbitrary loads.
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+        # Native requests to RFC1918 hosts are gated by Local Network Privacy; without this key iOS never prompts.
+        NSLocalNetworkUsageDescription: Huddle connects to a TimeHuddle server running on your local network.
+        NSSupportsLiveActivities: true
+        HNDefaultServerURL: $(HN_DEFAULT_SERVER_URL)
+        HNAppGroupID: $(APP_GROUP_ID)
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(HN_BUNDLE_ID)
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        GENERATE_INFOPLIST_FILE: NO
+
+  HuddleWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - Widgets/Sources
+    dependencies:
+      - package: HuddleKit
+      - sdk: WidgetKit.framework
+      - sdk: SwiftUI.framework
+    entitlements:
+      path: Widgets/HuddleWidgets.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - $(APP_GROUP_ID)
+    info:
+      path: Widgets/Info.plist
+      properties:
+        CFBundleDisplayName: Huddle
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        HNAppGroupID: $(APP_GROUP_ID)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(HN_BUNDLE_ID).widgets
+        GENERATE_INFOPLIST_FILE: NO
+
+schemes:
+  HuddleNative:
+    build:
+      targets:
+        HuddleNative: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - package: HuddleKit/HuddleKitTests

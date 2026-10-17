@@ -1,0 +1,11 @@
+// Copy to Config/Local.xcconfig (gitignored) and fill in.
+
+// Your Apple Developer team ID (Xcode › Settings › Accounts, or developer.apple.com › Membership).
+DEVELOPMENT_TEAM = ABCDE12345
+
+// Your Mac's Wi-Fi address and the Meteor backend port, so the server picker is prefilled.
+// Find it with: ipconfig getifaddr en0
+HN_DEFAULT_SERVER_URL = http:/$()/192.168.1.24:3100
+
+// If your team can't register com.sarkarshubhdeep.huddlenative, use your own reverse-DNS id.
+// HN_BUNDLE_ID = com.example.huddlenative

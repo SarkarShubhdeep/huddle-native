@@ -1,0 +1,17 @@
+// Shared build settings for every target and configuration.
+// Per-developer values (signing team, your Mac's LAN address) go in Local.xcconfig,
+// which is gitignored. Copy Local.xcconfig.example to get started.
+
+MARKETING_VERSION = 0.1.0
+CURRENT_PROJECT_VERSION = 1
+
+HN_BUNDLE_ID = com.sarkarshubhdeep.huddlenative
+APP_GROUP_ID = group.$(HN_BUNDLE_ID)
+
+// The server the app suggests on first launch. `//` starts a comment in
+// xcconfig files, so the slashes are split with an empty $().
+HN_DEFAULT_SERVER_URL = http:/$()/192.168.1.24:3100
+
+DEVELOPMENT_TEAM =
+
+#include? "Local.xcconfig"
