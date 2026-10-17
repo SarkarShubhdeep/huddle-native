@@ -64,6 +64,7 @@ Huddle Native is an experimental native iOS app in SwiftUI. It talks to the **ex
 - One accent per screen marks the primary action.
 - No progress rings or bars: the time is the hero, in SF Rounded with tabular digits.
 - Lists edge to edge with hairlines, no boxed sections.
+- Nothing hides behind the dock. Every tab's scroll views and Lists (pushed screens too) automatically get the dock's height as a bottom content margin, so the last row always scrolls clear. Screens that don't scroll, and anything pinned to the bottom, use `.clearsDock()`. Each UI step checks this by scrolling every new screen to the end in the Simulator, with and without the timer strip.
 - Accessibility is part of "done": Dynamic Type, VoiceOver labels, Reduce Motion and Reduce Transparency.
 
 **Stack**

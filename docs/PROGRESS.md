@@ -71,6 +71,7 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
     - `AppDock` is one custom Liquid Glass shape, as on the canvas: `TimerStrip` on top (timing, on shift, on break; hidden off the clock), a hairline, then the five tabs with a lime selection pill and an Inbox badge.
     - Tabs still live in a `TabView` with the system tab bar hidden, so each tab keeps its own navigation and scroll state. The dock sits in the bottom safe area and content scrolls under it. It doesn't minimize on scroll.
     - Solid under Reduce Transparency; the strip stops growing at xLarge text and offers the large content viewer, like system bars.
+    - Nothing hides behind it: the dock's measured height becomes a bottom content margin for every scroll view and List in every tab, pushed screens included, and follows the strip as it shows or hides. Non-scrolling screens use `.clearsDock()`. (A safe-area inset on the `TabView` doesn't reach Lists inside the tabs' navigation stacks.)
   - [x] filter and sort pills: `FilterPill` (native glass menu), `MultiSelectPill` (stays open while you tick), `SortPill` (field, then direction), `FilterCountPill`, `PillBar`
   - [x] the Now hero: `NowHero` in all four states (tiles fall back to a list at large text sizes) and `TicketTimerCard`
   - [x] the ticket row
@@ -130,4 +131,5 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
 ### Step 11: Hardening
 - [ ] Refresh torture test: background the app for 5+ minutes, use airplane mode, kill the backend mid-refresh. On every tab the spinner must stop within 6 s and the old data must stay.
 - [ ] VoiceOver, the largest Dynamic Type size, Reduce Motion, Reduce Transparency.
+- [ ] Dock clearance: on every screen, scroll to the end with and without the timer strip and at the largest text size, and confirm nothing is hidden behind the dock.
 - [ ] Update the docs and list the known gaps.

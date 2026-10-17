@@ -41,8 +41,13 @@ enum TimerStripState: Equatable, Sendable {
 /// holding the timer strip on top (while on the clock) and the five tabs below.
 ///
 /// Tabs still live in a `TabView`, so each keeps its own navigation and scroll
-/// state; only the system tab bar is hidden. The dock sits in the bottom safe
-/// area, so scroll views inset their content and scroll under the glass.
+/// state; only the system tab bar is hidden.
+///
+/// Nothing may end up hidden behind the dock. The dock's measured height is
+/// added as a bottom content margin for every scroll view and `List` in every
+/// tab, pushed screens included, so the last row always scrolls clear of it.
+/// (A safe-area inset doesn't work: it doesn't reach into the tabs'
+/// navigation stacks.) Screens that don't scroll use `.clearsDock()`.
 struct AppDock<Content: View>: View {
     @Binding var selection: AppTab
     var strip: TimerStripState?
@@ -50,21 +55,58 @@ struct AppDock<Content: View>: View {
     var onStripAction: () -> Void = {}
     @ViewBuilder var content: (AppTab) -> Content
 
+    /// Dock height plus the gap under it; updated when the strip shows or hides.
+    @State private var clearance: CGFloat = 0
+
     var body: some View {
         TabView(selection: $selection) {
             ForEach(AppTab.allCases) { tab in
                 Tab(tab.title, systemImage: tab.systemImage, value: tab) {
                     content(tab)
+                        // Margins travel through the environment, so they reach every
+                        // scroll view and List, including ones inside NavigationStacks.
+                        .contentMargins(.bottom, clearance, for: .scrollContent)
+                        .contentMargins(.bottom, clearance, for: .scrollIndicators)
+                        .environment(\.dockClearance, clearance)
                         .toolbar(.hidden, for: .tabBar)
                 }
             }
         }
         .tint(Palette.limeText)
-        .safeAreaInset(edge: .bottom, spacing: 0) {
+        .overlay(alignment: .bottom) {
             Dock(selection: $selection, strip: strip, inboxBadge: inboxBadge, onStripAction: onStripAction)
                 .padding(.horizontal, Spacing.m)
-                .padding(.bottom, Spacing.xs)
+                .padding(.bottom, Self.bottomGap)
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { height in
+                    clearance = height + Self.contentGap
+                }
         }
+    }
+
+    /// Space between the dock and the home indicator.
+    private static var bottomGap: CGFloat { Spacing.xs }
+    /// Space between the end of scrolled content and the top of the dock.
+    private static var contentGap: CGFloat { Spacing.s }
+}
+
+extension EnvironmentValues {
+    /// How much of the bottom of the screen the dock covers, above the safe area.
+    @Entry var dockClearance: CGFloat = 0
+}
+
+private struct ClearsDock: ViewModifier {
+    @Environment(\.dockClearance) private var clearance
+
+    func body(content: Content) -> some View {
+        content.padding(.bottom, clearance)
+    }
+}
+
+extension View {
+    /// Keeps a non-scrolling screen, or a control pinned to the bottom, above the dock.
+    /// Scroll views and Lists don't need this; they get the clearance as a content margin.
+    func clearsDock() -> some View {
+        modifier(ClearsDock())
     }
 }
 
