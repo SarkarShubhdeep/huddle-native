@@ -9,17 +9,19 @@ struct MainShell: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var tab: AppTab = .now
     @State private var now: NowModel?
+    @State private var inbox: InboxModel?
 
     var body: some View {
         Group {
-            if let now {
-                AppDock(selection: $tab, liveStrip: { now.strip(at: $0) }, onStripAction: { stripAction(now) }) { tab in
+            if let now, let inbox {
+                AppDock(selection: $tab, liveStrip: { now.strip(at: $0) }, inboxBadge: inbox.unreadCount,
+                        onStripAction: { stripAction(now) }) { tab in
                     NavigationStack {
-                        TabRoot(tab: tab, onShowTimesheet: { self.tab = .time })
+                        TabRoot(tab: tab, onShowTimesheet: { self.tab = .time }, onOpen: open)
                             .navigationTitle(tab.title)
                             .toolbar {
-                                // The timesheet spans all teams; its bar holds the week instead.
-                                if tab != .time {
+                                // The timesheet and inbox span all teams.
+                                if tab != .time && tab != .inbox {
                                     ToolbarItem(placement: .topBarLeading) { TeamSwitcher() }
                                 }
                                 // Profile and settings live behind the avatar on Now; the
@@ -31,6 +33,7 @@ struct MainShell: View {
                     }
                 }
                 .environment(now)
+                .environment(inbox)
                 .sensoryFeedback(.success, trigger: now.completed)
                 .sensoryFeedback(.error, trigger: now.actionError) { _, new in new != nil }
             } else {
@@ -39,17 +42,39 @@ struct MainShell: View {
         }
         .task {
             if now == nil { now = model.makeNowModel() }
-            await now?.data.load()
+            if inbox == nil, let api = model.api, let userId = model.userId {
+                inbox = InboxModel(api: api, userId: userId, snapshots: model.snapshotStore)
+            }
+            async let a: Void? = now?.data.load()
+            async let b: Void? = inbox?.inbox.load()
+            _ = await (a, b)
         }
         // Live data without a socket: refresh every 30 s while the app is in front.
         .task(id: scenePhase) {
             guard scenePhase == .active, let now else { return }
             await now.refresh()
+            await inbox?.refresh()
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(30))
                 guard !Task.isCancelled else { return }
                 await now.refresh()
+                await inbox?.refresh()
             }
+        }
+    }
+
+    /// Goes where a notification points.
+    private func open(_ route: NotificationRoute) {
+        switch route {
+        case .now: tab = .now
+        case .tickets: tab = .tickets
+        case .time: tab = .time
+        case let .huddle(teamId):
+            if let teamId, teamId != model.team?.id, let team = model.teams?.value?.first(where: { $0.id == teamId }) {
+                model.select(team)
+            }
+            tab = .huddle
+        case .none: break
         }
     }
 
@@ -68,6 +93,7 @@ struct MainShell: View {
 private struct TabRoot: View {
     let tab: AppTab
     var onShowTimesheet: () -> Void = {}
+    var onOpen: (NotificationRoute) -> Void = { _ in }
     @Environment(AppModel.self) private var model
 
     var body: some View {
@@ -79,6 +105,8 @@ private struct TabRoot: View {
             HuddleScreen()
         } else if tab == .time, model.team != nil {
             TimesheetScreen()
+        } else if tab == .inbox, model.team != nil {
+            InboxScreen(open: onOpen)
         } else {
             placeholderView
         }
@@ -153,17 +181,10 @@ struct TeamSwitcher: View {
 /// Profile and settings arrive in Step 9.
 struct AccountMenu: View {
     @Environment(AppModel.self) private var model
+    @State private var showSettings = false
 
     var body: some View {
-        Menu {
-            Section {
-                if let me = model.me { Text(me.displayName) }
-                if let host = model.session.session?.endpoint.baseURL.host() { Text(host) }
-            }
-            Button("Sign out", systemImage: "rectangle.portrait.and.arrow.right", role: .destructive) {
-                model.signOut()
-            }
-        } label: {
+        Button { showSettings = true } label: {
             Avatar(initials: model.me?.initials ?? "", size: 32, isMe: true)
                 .overlay {
                     if model.me == nil {
@@ -172,5 +193,6 @@ struct AccountMenu: View {
                 }
         }
         .accessibilityLabel("Profile and settings")
+        .sheet(isPresented: $showSettings) { SettingsSheet() }
     }
 }

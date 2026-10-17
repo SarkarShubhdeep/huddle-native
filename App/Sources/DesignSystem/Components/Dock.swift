@@ -173,6 +173,8 @@ private struct DockTabButton: View {
                             Text(badge > 99 ? "99+" : "\(badge)")
                                 .font(.system(size: 11, weight: .bold))
                                 .foregroundStyle(.white)
+                                .lineLimit(1)
+                                .fixedSize()
                                 .padding(.horizontal, 5)
                                 .frame(minWidth: 18, minHeight: 18)
                                 .background(Palette.destructive, in: Capsule())

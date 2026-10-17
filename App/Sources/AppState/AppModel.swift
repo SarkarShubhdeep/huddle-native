@@ -18,12 +18,20 @@ final class AppModel {
     @ObservationIgnored private let snapshots: any SnapshotStore
     @ObservationIgnored private let defaults: UserDefaults
 
+    /// Every request this session sends, for Settings › Diagnostics.
+    let requestLog: RequestLog
+
     init(
-        session: SessionStore = SessionStore(secrets: KeychainStore()),
+        session: SessionStore? = nil,
+        requestLog: RequestLog = RequestLog(),
         snapshots: any SnapshotStore = FileSnapshotStore(),
         defaults: UserDefaults = .standard
     ) {
-        self.session = session
+        self.requestLog = requestLog
+        self.session = session ?? SessionStore(
+            secrets: KeychainStore(),
+            transport: LoggingTransport(URLSessionTransport(), log: requestLog)
+        )
         self.snapshots = snapshots
         self.defaults = defaults
     }
@@ -42,6 +50,7 @@ final class AppModel {
 
     func signOut() {
         session.signOut()
+        requestLog.clear()
         teams = nil
         team = nil
         me = nil

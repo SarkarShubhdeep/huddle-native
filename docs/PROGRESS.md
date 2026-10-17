@@ -184,9 +184,20 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
 - [x] **You:** post from the app and see the post in the web app. Confirmed: a post from the app shows correctly in the web app's Huddle feed.
 
 ### Step 9: Inbox and Settings
-- [ ] Notifications with an unread badge, swipe to mark read or delete, and Mark all read.
-- [ ] 30 s polling while the screen is visible, plus a refresh whenever the app becomes active.
-- [ ] Settings: profile, server, sign out, and diagnostics (recent requests and how long they took).
+- [x] Notifications with an unread badge, swipe to mark read or delete, and Mark all read.
+  - The dock's Inbox tab shows the unread count. Rows say what kind each one is (clock, shift reminder, ticket, mention) and when, and unread ones have a lime dot.
+  - Tap marks read and goes where it points: `NotificationRoute` (HuddleKit, tested) maps the web paths to Now, Tickets, Huddle (switching team if needed) or Time.
+  - Swipe right to mark read, left to delete. The menu has Mark all read and Delete read. Each change shows at once, then a refetch confirms it.
+- [x] 30 s polling while the screen is visible, plus a refresh whenever the app becomes active. The inbox polls with the shift on every tab, so the badge stays current.
+- [x] Settings: profile, server, sign out, and diagnostics (recent requests and how long they took).
+  - Opens from the avatar on Now: name and handle, team, server, session expiry, version, and Sign out (with a confirmation).
+  - Diagnostics lists the last 50 requests: method, time, status or failure, and milliseconds. `LoggingTransport` and `RequestLog` (HuddleKit, tested) wrap every call. It also has a Test connection button.
+  - Switching servers means signing out; there's no in-place server change.
+- [x] Checked against the local backend:
+  - The badge matched the database's unread count.
+  - A tap marked one read (37 → 36) and opened Huddle.
+  - Swipe-delete removed one (43 → 42).
+  - Diagnostics listed each of those calls.
 
 ### Step 10: System integration
 - [ ] App Intents: Start day, Take break, End day, Start ticket timer.
