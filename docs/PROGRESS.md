@@ -57,7 +57,10 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
 - [x] **You:** run `swift test` in `Packages/HuddleKit` on your Mac (or ⌘U in Xcode). Confirmed: passes in Terminal and in Xcode.
 
 ### Step 3: Design system in code
-- [ ] Tokens from DESIGN.md: color sets in light and dark, type, spacing, radius, motion.
+- [x] Tokens from DESIGN.md: color sets in light and dark, type, spacing, radius, motion.
+  - 17 color sets under `Assets.xcassets/Palette`, reached through `Palette`. The canvas's soft tints (lime, done), raised surface, fill and bar colors are included.
+  - `Typography` (system text styles, SF Rounded tabular times, `HeroTimeText`), `Spacing`, `Radius`, `Motion` (the spring, off under Reduce Motion), and `controlGlass` (solid under Reduce Transparency).
+  - A debug-only `ComponentGallery` is the app's root for now, so every component can be screenshotted in the Simulator.
 - [ ] Button styles, the status chip, the empty, error and offline states, and the refresh banner.
 - [ ] Signature components:
   - [ ] the glass dock with the timer strip

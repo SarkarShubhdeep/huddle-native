@@ -5,7 +5,11 @@ import SwiftUI
 struct HuddleNativeApp: App {
     var body: some Scene {
         WindowGroup {
+            #if DEBUG
+            ComponentGallery()
+            #else
             SkeletonView()
+            #endif
         }
     }
 }

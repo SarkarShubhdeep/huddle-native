@@ -65,6 +65,8 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: $(HN_BUNDLE_ID)
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        # Colors are reached through `Palette`; generated symbols like `Color.fill` would clash with SwiftUI's.
+        ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: NO
         GENERATE_INFOPLIST_FILE: NO
 
   HuddleWidgets:
