@@ -9,7 +9,7 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
 - [x] Lock the decisions (see [DESIGN.md](DESIGN.md)).
 
 ### Step 1: Repo skeleton
-- [ ] **You:** create the empty GitHub repo `SarkarShubhdeep/huddle-native`.
+- [x] **You:** create the empty GitHub repo `SarkarShubhdeep/huddle-native`.
 - [x] `project.yml` with three targets: the app, the widget/Live Activity extension, and the local `HuddleKit` package. iOS 26, Swift 6, strict concurrency.
 - [x] Info.plist keys: `NSLocalNetworkUsageDescription`, `NSAllowsLocalNetworking`, Live Activities. Plus the App Group and bundle id.
 - [x] `Config/Base.xcconfig`, plus a gitignored `Local.xcconfig` for the signing team and LAN address.
@@ -17,7 +17,7 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
 - [x] App icon from the approved concept (lime ring on graphite, plus dark and tinted variants).
 - [x] `.gitignore`, `docs/DESIGN.md`, `docs/PLAN.md` (plan and guidelines), this file.
 - [x] HuddleKit's first unit, `ServerEndpoint`, with Swift Testing tests.
-- [ ] Push. Blocked until the GitHub repo exists and this session can reach it.
+- [x] Push to https://github.com/SarkarShubhdeep/huddle-native.
 - [ ] **You:** run `brew install xcodegen && xcodegen`, open the project in Xcode, and confirm the empty app builds and runs on a device.
 
 ### Step 2: HuddleKit core

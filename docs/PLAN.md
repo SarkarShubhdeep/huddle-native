@@ -22,13 +22,9 @@ Huddle Native is an experimental native iOS app in SwiftUI. It talks to the **ex
     - GitHub-style filter and sort pills
     - a rich composer with @ people and tickets
     - Liquid Glass on controls only
-- **Step 1 (repo skeleton): built and committed**, 18 files.
+- **Step 1 (repo skeleton): pushed** to https://github.com/SarkarShubhdeep/huddle-native.
   - HuddleKit tests: 7 of 7 pass on Swift 6.2 (Linux).
-  - **Not pushed yet.** `SarkarShubhdeep/huddle-native` doesn't exist on GitHub, or this session can't reach it. This session also can't create repos.
-- **Blocking on you:**
-  1. Create the empty public repo `SarkarShubhdeep/huddle-native` at https://github.com/new, with no README or license.
-  2. If pushing still fails, give the Claude GitHub App access to it at https://claude.ai/connect-github, or start a new session with the repo selected.
-  3. Run `xcodegen` on your Mac and confirm the app builds on a device.
+- **Waiting on you:** run `xcodegen` on your Mac and confirm the app builds and runs on a device. That's the last box of Step 1.
 
 ## Guidelines (apply to every step)
 
@@ -86,7 +82,7 @@ Huddle Native is an experimental native iOS app in SwiftUI. It talks to the **ex
 (Step-by-step detail and checkboxes live in `docs/PROGRESS.md`.)
 
 0. ✅ **Design review.**
-1. 🟡 **Repo skeleton.** Built locally. Waiting on the GitHub repo and your first Xcode build.
+1. 🟡 **Repo skeleton.** Pushed. Waiting on your first Xcode build.
 2. **HuddleKit core:**
    - APIClient
    - MeteorLogin
