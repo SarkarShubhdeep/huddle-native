@@ -26,7 +26,7 @@ struct ShiftLiveActivityWidget: Widget {
                     if let title = s.ticketTitle {
                         VStack(alignment: .trailing, spacing: 2) {
                             Text(title).font(.caption).foregroundStyle(.secondary).lineLimit(1)
-                            TicketTimeText(snapshot: s).font(.headline.monospacedDigit())
+                            TicketTimeText(snapshot: s, alignment: .trailing).font(.headline.monospacedDigit())
                         }
                     }
                 }
@@ -74,7 +74,7 @@ private struct LockScreenShiftView: View {
                 if let title = snapshot.ticketTitle {
                     VStack(alignment: .trailing, spacing: 2) {
                         Text(title).font(.caption).foregroundStyle(.secondary).lineLimit(1)
-                        TicketTimeText(snapshot: snapshot).font(.headline.monospacedDigit())
+                        TicketTimeText(snapshot: snapshot, alignment: .trailing).font(.headline.monospacedDigit())
                     }
                 }
             }

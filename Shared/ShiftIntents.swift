@@ -1,6 +1,7 @@
 import AppIntents
 import Foundation
 import HuddleKit
+import UserNotifications
 
 // The shift actions for Siri, Shortcuts, the Action button, Control Center,
 // widgets and the Live Activity. They're `LiveActivityIntent`s, so they run
@@ -21,7 +22,14 @@ enum ShiftIntentRunner {
             try await action(actions)
         } catch let failure as ShiftActions.Failure where failure == .needsPlan || failure == .needsWrapUp {
             SharedContainer.pendingSheet = failure == .needsPlan ? .plan : .wrapUp
-            try await intent.continueInForeground(IntentDialog(stringLiteral: failure.errorDescription ?? ""), alwaysConfirm: false)
+            let message = failure.errorDescription ?? ""
+            do {
+                try await intent.continueInForeground(IntentDialog(stringLiteral: message), alwaysConfirm: false)
+            } catch {
+                // Control Center can't bring the app forward; a notification
+                // says what's needed, and tapping it opens that sheet.
+                await ShiftNotice.post(failure == .needsPlan ? "Write your plan to start the day." : "Post your wrap-up to end the day.")
+            }
             return
         }
         let snapshot = try await SharedContainer.refresh()
@@ -133,5 +141,35 @@ struct StartTicketTimerIntent: LiveActivityIntent {
         let id = ticket.id
         try await ShiftIntentRunner.run(self) { try await $0.startTicket(id) }
         return .result(dialog: "Timing \(ticket.title).")
+    }
+}
+
+/// A local notification for an action that needs the app.
+enum ShiftNotice {
+    static let identifier = "huddle.shift.needsApp"
+
+    static func post(_ body: String) async {
+        let center = UNUserNotificationCenter.current()
+        guard await center.notificationSettings().authorizationStatus == .authorized else { return }
+        let content = UNMutableNotificationContent()
+        content.title = "Huddle"
+        content.body = body
+        content.sound = .default
+        content.interruptionLevel = .timeSensitive
+        try? await center.add(UNNotificationRequest(identifier: identifier, content: content, trigger: nil))
+    }
+
+    static func clear() {
+        let center = UNUserNotificationCenter.current()
+        center.removeDeliveredNotifications(withIdentifiers: [identifier])
+        center.removePendingNotificationRequests(withIdentifiers: [identifier])
+    }
+
+    /// Asks once, and only for someone on a team that uses plans.
+    static func requestPermissionIfUseful() async {
+        guard !SharedContainer.planTeams.isEmpty else { return }
+        let center = UNUserNotificationCenter.current()
+        guard await center.notificationSettings().authorizationStatus == .notDetermined else { return }
+        _ = try? await center.requestAuthorization(options: [.alert, .sound])
     }
 }

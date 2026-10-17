@@ -58,12 +58,14 @@ struct MainShell: View {
             async let a: Void? = now?.data.load()
             async let b: Void? = inbox?.inbox.load()
             _ = await (a, b)
+            await ShiftNotice.requestPermissionIfUseful()
         }
         // Live data without a socket: refresh every 30 s while the app is in front.
         .task(id: scenePhase) {
             guard scenePhase == .active, let now else { return }
             if let sheet = SharedContainer.pendingSheet {
                 SharedContainer.pendingSheet = nil
+                ShiftNotice.clear()
                 tab = .now
                 now.requestedSheet = sheet
             }

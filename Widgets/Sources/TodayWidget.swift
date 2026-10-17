@@ -154,7 +154,7 @@ struct TodayWidgetView: View {
             HStack(spacing: 4) {
                 Text(title).lineLimit(1)
                 Spacer(minLength: 0)
-                TicketTimeText(snapshot: snapshot).monospacedDigit()
+                TicketTimeText(snapshot: snapshot, alignment: .trailing).monospacedDigit()
                     .foregroundStyle(snapshot.ticketSince != nil ? WidgetPalette.limeText : .secondary)
             }
             .font(.caption)

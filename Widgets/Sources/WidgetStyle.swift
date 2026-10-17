@@ -84,12 +84,17 @@ struct ShiftTimeText: View {
 /// The ticket time: ticking while its timer runs, fixed when paused.
 struct TicketTimeText: View {
     let snapshot: ShiftSnapshot
+    /// A ticking timer reserves its widest width; this sets where the digits sit in it.
+    var alignment: TextAlignment = .leading
 
     var body: some View {
-        if let since = snapshot.ticketSince {
-            Text(timerInterval: since...Date.distantFuture, countsDown: false)
-        } else {
-            Text(ShiftClock.clockString(snapshot.ticketSeconds))
+        Group {
+            if let since = snapshot.ticketSince {
+                Text(timerInterval: since...Date.distantFuture, countsDown: false)
+            } else {
+                Text(ShiftClock.clockString(snapshot.ticketSeconds))
+            }
         }
+        .multilineTextAlignment(alignment)
     }
 }

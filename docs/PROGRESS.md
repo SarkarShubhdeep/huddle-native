@@ -208,7 +208,10 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
   - A Shift toggle (on = on the clock) and a Break button, plus the widget's action button (Start day / Break / Back).
   - Checked in the Simulator: both controls are in the Control Center gallery, the toggle shows the real shift state, and Break started and ended a break on the server.
   - Teams that ask for a plan or wrap-up: Start day from outside the app now refuses for a plan team (the backend only checks the plan at clock-out). End day is refused by the server. Either way Huddle opens on the plan or wrap-up sheet the next time it comes forward.
-    - Siri and Shortcuts can bring the app forward right away (`supportedModes` with `.foreground(.dynamic)`). A Control Center toggle can't: iOS refuses (error 2018), and the control just stays on.
+    - Siri and Shortcuts can bring the app forward right away (`supportedModes` with `.foreground(.dynamic)`).
+    - A Control Center toggle can't (iOS refuses with error 2018), so it posts a local notification instead, e.g. "Post your wrap-up to end the day."
+    - Opening Huddle then goes straight to that sheet. Checked: notification delivered, app opened on the wrap-up sheet.
+    - Notification permission is asked once, in the app, and only if one of your teams uses plans.
 - [x] Live Activity and Dynamic Island.
   - Starts while you're on the clock and ends when you clock out.
   - Shows the shift time (amber on a break), the ticket and its time, and Break / Back to work / Pause ticket. It ticks on the device, with no pushes.
@@ -218,7 +221,8 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
   - The session moved into a shared keychain group (`keychain-access-groups`: `<team>.<bundle id>.shared`). `FallbackSecretStore` moves an older session over without signing anyone out.
   - The selected team and the latest `ShiftSnapshot` (HuddleKit, tested) live in the App Group.
   - The app republishes the snapshot whenever the shift changes, and refetches when an intent changed it from outside.
-- [ ] **You:** clock in from Control Center and watch the Live Activity tick.
+- [x] Lock Screen Live Activity checked: shift time, ticket and its time (right-aligned), Break and Pause buttons.
+- [ ] **You:** clock in from Control Center and watch the Live Activity tick, on a device.
 
 ### Step 11: Hardening
 - [ ] Refresh torture test: background the app for 5+ minutes, use airplane mode, kill the backend mid-refresh. On every tab the spinner must stop within 6 s and the old data must stay.
