@@ -34,6 +34,8 @@ enum Palette {
     static let done = Color("Done")
     static let doneSoft = Color("DoneSoft")
     static let destructive = Color("Destructive")
+    /// Background for inline errors, such as a failed sign-in.
+    static let destructiveSoft = Color("DestructiveSoft")
 
     /// Inactive week bars.
     static let bar = Color("Bar")

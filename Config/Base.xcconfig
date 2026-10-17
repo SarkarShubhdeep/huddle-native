@@ -12,6 +12,11 @@ APP_GROUP_ID = group.$(HN_BUNDLE_ID)
 // xcconfig files, so the slashes are split with an empty $().
 HN_DEFAULT_SERVER_URL = http:/$()/192.168.1.24:3100
 
+// The shared Development and Production servers in the picker. Left empty, the
+// picker hides that choice. Set them in Local.xcconfig.
+HN_DEV_SERVER_URL =
+HN_PROD_SERVER_URL =
+
 DEVELOPMENT_TEAM =
 
 #include? "Local.xcconfig"

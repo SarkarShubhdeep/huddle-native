@@ -3,39 +3,49 @@ import SwiftUI
 
 @main
 struct HuddleNativeApp: App {
+    @State private var model = AppModel()
+
     var body: some Scene {
         WindowGroup {
             #if DEBUG
-            ComponentGallery()
+            if UserDefaults.standard.bool(forKey: "gallery") {
+                // Launch with `-gallery YES` for the component gallery.
+                ComponentGallery()
+            } else {
+                RootView().environment(model)
+            }
             #else
-            SkeletonView()
+            RootView().environment(model)
             #endif
         }
     }
 }
 
-/// Step 1 placeholder: proves the app, HuddleKit and Info.plist wiring work.
-/// Replaced by the first-run flow in Step 4.
-private struct SkeletonView: View {
-    private let defaultServer = Bundle.main.object(forInfoDictionaryKey: "HNDefaultServerURL") as? String ?? ""
+/// Restoring → first run, or the signed-in app.
+struct RootView: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "clock")
-                .font(.system(size: 44, weight: .semibold))
-                .foregroundStyle(.tint)
-            Text("Huddle")
-                .font(.largeTitle.bold())
-            if let endpoint = ServerEndpoint(defaultServer) {
-                Text(endpoint.baseURL.absoluteString)
-                    .font(.footnote.monospaced())
-                    .foregroundStyle(.secondary)
+        Group {
+            switch model.session.state {
+            case .restoring:
+                AppMark(size: 72)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Palette.canvas)
+            case let .signedOut(reason):
+                FirstRunFlow(reason: reason)
+            case .signedIn:
+                MainShell()
             }
         }
-        .padding()
+        .springAnimation(value: model.session.state)
+        .task { await model.start() }
+        .onChange(of: scenePhase) { _, phase in
+            // Coming back to the app refreshes what's on screen.
+            if phase == .active, model.session.session != nil {
+                Task { await model.refreshTeams() }
+            }
+        }
     }
-}
-
-#Preview {
-    SkeletonView()
 }

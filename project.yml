@@ -59,6 +59,8 @@ targets:
         NSLocalNetworkUsageDescription: Huddle connects to a TimeHuddle server running on your local network.
         NSSupportsLiveActivities: true
         HNDefaultServerURL: $(HN_DEFAULT_SERVER_URL)
+        HNDevServerURL: $(HN_DEV_SERVER_URL)
+        HNProdServerURL: $(HN_PROD_SERVER_URL)
         HNAppGroupID: $(APP_GROUP_ID)
     settings:
       base:
