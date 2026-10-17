@@ -27,8 +27,8 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
   - [x] a single retry on transient errors
   - [x] envelope decoding
   - [x] `APIError`
-- [ ] `MeteorLogin`: a one-shot WebSocket connect → login → close, capped at 10 s, sending the SHA-256 digest plus `raw`.
-- [ ] `Keychain` + `SessionStore`: save, restore, and sign out on `unauthorized`.
+- [x] `MeteorLogin`: a one-shot WebSocket connect → login → close, capped at 10 s, sending the SHA-256 digest plus `raw`.
+- [x] `Keychain` + `SessionStore`: save, restore, and sign out on `unauthorized`.
 - [ ] Models:
   - [ ] Team
   - [ ] ClockEvent and Break
