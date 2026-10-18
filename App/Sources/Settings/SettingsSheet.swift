@@ -5,6 +5,7 @@ import SwiftUI
 /// diagnostics for when something seems slow or stuck.
 struct SettingsSheet: View {
     @Environment(AppModel.self) private var app
+    @Environment(ReleaseNotesStore.self) private var notes
     @Environment(\.dismiss) private var dismiss
     @State private var confirmSignOut = false
 
@@ -38,6 +39,21 @@ struct SettingsSheet: View {
                 }
 
                 Section {
+                    NavigationLink { ReleaseNotesList() } label: {
+                        HStack {
+                            Label("What’s new", systemImage: "sparkles")
+                            Spacer()
+                            if !notes.unread.isEmpty {
+                                Text("\(notes.unread.count)")
+                                    .font(.footnote.weight(.bold))
+                                    .foregroundStyle(Palette.onLime)
+                                    .padding(.horizontal, 7)
+                                    .frame(minHeight: 20)
+                                    .background(Palette.lime, in: Capsule())
+                                    .accessibilityLabel("\(notes.unread.count) new")
+                            }
+                        }
+                    }
                     NavigationLink("Diagnostics") { DiagnosticsView() }
                     LabeledContent("Version", value: version)
                 }

@@ -70,8 +70,12 @@ Shared/                  Code in both the app and the extension: App Intents,
                          the Live Activity attributes, the shared keychain/App Group
 Packages/HuddleKit/      Networking, models, services, refresh engine, markdown
                          codec, shift snapshot (no UI)
+ReleaseNotes/            One markdown note per build, with its screenshots and clips;
+                         shipped in the app as Settings › What’s new
 docs/                    Design notes and the step-by-step progress checklist
 ```
+
+**Shipping a build?** Bump `MARKETING_VERSION` in `Config/Base.xcconfig` and add `ReleaseNotes/<version>.md`. [ReleaseNotes/README.md](ReleaseNotes/README.md) has the format and the screenshot recipe. `swift test` checks that every note parses and that its pictures exist.
 
 ## Tests
 

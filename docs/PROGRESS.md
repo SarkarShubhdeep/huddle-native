@@ -239,3 +239,16 @@ Each step ends at a checkpoint. **You** = the developer's action on a Mac or dev
 - [x] Dock clearance: on every screen, scroll to the end with and without the timer strip and at the largest text size, and confirm nothing is hidden behind the dock. Every tab uses the dock's content margins, and the AX5 screenshots show the last rows clear.
 - [x] Update the docs and list the known gaps: README (layout, refresh logging, known gaps), and PLAN (status and what changed).
 - [ ] **You:** on a device: VoiceOver by ear, airplane mode, a 5-minute background, and clock in from Control Center.
+
+### Pre-beta release notes ([#1](https://github.com/SarkarShubhdeep/huddle-native/issues/1))
+- [x] `ReleaseNotes/<version>.md`, one per build, with front matter (version, date, title, channel) and assets in `ReleaseNotes/assets/<version>/`. The folder ships in the app as-is. [ReleaseNotes/README.md](../ReleaseNotes/README.md) has the rules and the screenshot recipe.
+- [x] `ReleaseNote`, `SemanticVersion`, `ReleaseNoteBlock` and `ReleaseNoteCatalog` (HuddleKit, 8 tests). They cover parsing, the filename check, splitting into headings, text, pictures and clips, and which notes show and which are unread. One test parses every shipped note and checks that its pictures and clips exist.
+- [x] Settings › What’s new: every note up to this build, newest first, with a dot on unread ones and a count on the Settings row. A note shows its header, markdown text, screenshots and looping muted clips. Clips start paused under Reduce Motion, and a tap plays or pauses them.
+- [x] “Huddle got updated” on Now, once after an update. See what’s new opens that note in a sheet with a link to all notes; opening it or closing the banner marks it seen. “Seen” is kept on the device, and a fresh install counts as seen.
+- [x] `MARKETING_VERSION` 0.10.0. Notes 0.1.0–0.9.0 cover Steps 3–11, and 0.10.0 covers this feature. Each has screenshots or a clip from the Simulator.
+- [x] Checked in the Simulator:
+  - With seen set to 0.9.0, the banner showed and the list dotted only 0.10.0. After that, a relaunch showed no banner.
+  - A fresh install recorded 0.10.0 as seen.
+  - Images, the clip (paused under Reduce Motion, plays on tap) and bullet lists all render, and text wraps at the largest size.
+  - Fixed: rows in the list opened from the sheet didn’t navigate. Value links don’t register on a pushed view, so the rows now use destination links.
+- [ ] **You:** read through the notes and swap any screenshot you’d rather show differently.

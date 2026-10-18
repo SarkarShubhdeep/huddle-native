@@ -10,10 +10,16 @@ struct NowScreen: View {
 
     @State private var showPlan = false
     @State private var showWrapUp = false
+    @State private var whatsNew: ReleaseNote?
+    @Environment(ReleaseNotesStore.self) private var releaseNotes
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.l) {
+                if let note = releaseNotes.announcement {
+                    UpdatedBanner(note: note, open: { whatsNew = note }, dismiss: { releaseNotes.markAllSeen() })
+                        .transition(.opacity)
+                }
                 if let error = now.data.error, now.data.value != nil {
                     RefreshBanner(message: banner(for: error)) { await timedRefresh("Now") { await now.refresh() } }
                 }
@@ -61,6 +67,10 @@ struct NowScreen: View {
             case .wrapUp: if now.active != nil { showWrapUp = true }
             }
         }
+        .sheet(item: $whatsNew, onDismiss: { releaseNotes.markAllSeen() }) { note in
+            WhatsNewSheet(note: note)
+        }
+        .springAnimation(value: releaseNotes.announcement?.id)
         .sheet(isPresented: $showWrapUp) {
             WrapUpSheet(requiresWrapUp: activeTeam?.requiresPlan ?? false)
         }
