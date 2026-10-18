@@ -200,6 +200,10 @@ struct LoopingClip: View {
     }
 
     private func prepare() async {
+        player?.pause()
+        looper = nil
+        player = nil
+        isPlaying = false
         let asset = AVURLAsset(url: url)
         if let track = try? await asset.loadTracks(withMediaType: .video).first,
            let size = try? await track.load(.naturalSize), size.width > 0, size.height > 0 {

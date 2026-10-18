@@ -48,8 +48,11 @@ final class ReleaseNotesStore {
 
     /// A file a note refers to, such as `assets/0.3.0/now.jpg`.
     func asset(_ path: String) -> URL? {
-        guard let folder, !path.contains("..") else { return nil }
-        let url = folder.appendingPathComponent(path)
+        guard let folder, !path.hasPrefix("/") else { return nil }
+        // Stay inside the bundled folder, whatever the path says.
+        let root = folder.standardizedFileURL.path + "/"
+        let url = folder.appendingPathComponent(path).standardizedFileURL
+        guard url.path.hasPrefix(root) else { return nil }
         return FileManager.default.fileExists(atPath: url.path) ? url : nil
     }
 
