@@ -4,6 +4,7 @@ import SwiftUI
 @main
 struct HuddleNativeApp: App {
     @State private var model = AppModel()
+    @State private var releaseNotes = ReleaseNotesStore()
 
     var body: some Scene {
         WindowGroup {
@@ -12,10 +13,10 @@ struct HuddleNativeApp: App {
                 // Launch with `-gallery YES` for the component gallery.
                 ComponentGallery()
             } else {
-                RootView().environment(model)
+                RootView().environment(model).environment(releaseNotes)
             }
             #else
-            RootView().environment(model)
+            RootView().environment(model).environment(releaseNotes)
             #endif
         }
     }

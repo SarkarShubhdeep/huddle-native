@@ -2,7 +2,7 @@
 // Per-developer values (signing team, your Mac's LAN address) go in Local.xcconfig,
 // which is gitignored. Copy Local.xcconfig.example to get started.
 
-MARKETING_VERSION = 0.1.0
+MARKETING_VERSION = 0.10.0
 CURRENT_PROJECT_VERSION = 1
 
 HN_BUNDLE_ID = com.sarkarshubhdeep.huddlenative

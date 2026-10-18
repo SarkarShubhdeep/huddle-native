@@ -34,6 +34,10 @@ targets:
       - App/Sources
       - App/Resources
       - Shared
+      # Release notes ship inside the app as a folder (README included, ignored by the parser).
+      - path: ReleaseNotes
+        type: folder
+        buildPhase: resources
     dependencies:
       - package: HuddleKit
       - target: HuddleWidgets
